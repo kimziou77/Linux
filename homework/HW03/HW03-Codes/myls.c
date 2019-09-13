@@ -130,6 +130,8 @@ void fileType(const struct stat *fileInfo) {
         printf("b");
     } else if (S_ISCHR(fileInfo->st_mode)) {
         printf("c");
+    }else if (S_ISSOCK(fileInfo->st_mode)){
+	printf("s");
     }else {
         printf("?");
     }
