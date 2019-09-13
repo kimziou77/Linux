@@ -21,15 +21,11 @@ int main(int argc, char const *argv[]) {
         printf("Usage : %s [pathname]\n", argv[0]);
         exit(-1);
     }
-
     if (chdir(argv[1]) == -1) {
         perror("chdir() error!");
         exit(-1);
     }
-
-    char cwd[MAX_PATH_LEN + 1] = {
-        '\0',
-    };
+    char cwd[MAX_PATH_LEN + 1] = {'\0',};
     if (getcwd(cwd, MAX_PATH_LEN) == NULL) {
         perror("getcwd() error!");
         exit(-1);
@@ -42,8 +38,6 @@ int main(int argc, char const *argv[]) {
     struct passwd *userInfo;
 
     dirp = opendir(cwd); // open dir
-
-    // print error message and exit
 
     while ((dirInfo = readdir(dirp)) != NULL) {
         if (stat(dirInfo->d_name, &fileInfo) == -1) {
@@ -66,57 +60,20 @@ int main(int argc, char const *argv[]) {
 }
 
 void fileMode(const struct stat *fileInfo) {
-
     // User
-    if (S_IRUSR & fileInfo->st_mode) {
-        printf("r");
-    } else {
-        printf("-");
-    }
-    if (S_IWUSR & fileInfo->st_mode) {
-        printf("w");
-    } else {
-        printf("-");
-    }
-    if (S_IXUSR & fileInfo->st_mode) {
-        printf("x");
-    } else {
-        printf("-");
-    }
+    if (S_IRUSR & fileInfo->st_mode) {printf("r");} else {printf("-");}
+    if (S_IWUSR & fileInfo->st_mode) {printf("w");} else {printf("-");}
+    if (S_IXUSR & fileInfo->st_mode) {printf("x");} else {printf("-");}
 
     // Group
-    if (S_IRGRP & fileInfo->st_mode) {
-        printf("r");
-    } else {
-        printf("-");
-    }
-    if (S_IWGRP & fileInfo->st_mode) {
-        printf("w");
-    } else {
-        printf("-");
-    }
-    if (S_IXGRP & fileInfo->st_mode) {
-        printf("x");
-    } else {
-        printf("-");
-    }
+    if (S_IRGRP & fileInfo->st_mode) {printf("r");} else {printf("-");}
+    if (S_IWGRP & fileInfo->st_mode) {printf("w");} else {printf("-");}
+    if (S_IXGRP & fileInfo->st_mode) {printf("x");} else {printf("-");}
 
     // Others
-    if (S_IROTH & fileInfo->st_mode) {
-        printf("r");
-    } else {
-        printf("-");
-    }
-    if (S_IWOTH & fileInfo->st_mode) {
-        printf("x");
-    } else {
-        printf("-");
-    }
-    if (S_IXOTH & fileInfo->st_mode) {
-        printf("w");
-    } else {
-        printf("-");
-    }
+    if (S_IROTH & fileInfo->st_mode) {printf("r");} else {printf("-");}
+    if (S_IWOTH & fileInfo->st_mode) {printf("x");} else {printf("-");}
+    if (S_IXOTH & fileInfo->st_mode) {printf("w");} else {printf("-");}
 }
 
 void fileType(const struct stat *fileInfo) {
