@@ -20,43 +20,44 @@ int main(void) {
     // 1st student info
     // ID: 921205, Name : jin, Score : 99.3
 
-    /* 아래에 코드를 작성하세요. */
+    int fd = 0;
+    char *pathName = "./StudentList.dat";
+    size_t rSize = 5;
     list<Student> stuList;
     list<Student>::iterator iter;
 
-    char *pathName = "./StudentList.dat";
-    int fd = open(pathName, O_RDONLY);
+    // Student *st = new Student;
+    Student *st = (Student *)malloc(sizeof(Student));
+    st->setId(0);
+    st->setName("");
+    st->setScore(0);
+
+    fd = open(pathName, O_RDONLY);
     if (fd == -1) {
         perror("open() error!");
         exit(-1);
     }
-    printf("fd : %d\n", fd);
 
-    size_t rSize = 0;
-    lseek(fd, (off_t)0, SEEK_SET);
     do {
-        Student *st = new Student;
+
         rSize = read(fd, (Student *)st, sizeof(Student));
-        printf("rSize : %d", rSize);
         if (rSize == -1) {
             perror("read() error");
             return 2;
-        } else {
-            stuList.push_back(*st);
         }
-        delete st;
+        stuList.push_back(*st);
+
     } while (rSize > 0);
 
-    printf("list size : %d\n", stuList.size());
     int num = 1;
+
     for (iter = stuList.begin(); iter != stuList.end(); ++iter) {
         int id = iter->getId();
         std::string name = iter->getName();
         double score = iter->getScore();
 
-        Student st(id, name, score);
-        // stuList.push_back(st);
-        cout << num << "번쨰 학생 정보" << endl;
+        // Student st(id, name, score);
+        cout << num++ << "번쨰 학생 정보" << endl;
         cout << "ID : " << id << ", Name : " << name << ", Score : " << score
              << endl;
     }
