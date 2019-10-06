@@ -11,7 +11,6 @@ using namespace std;
 
 int main(void) {
 
-    /* 아래에 코드를 작성하세요. */
     list<Student> stuList;
 
     while (1) {
