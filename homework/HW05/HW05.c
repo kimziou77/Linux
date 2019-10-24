@@ -8,7 +8,6 @@
 #define PERMS 0666
 int main(int argc, char const *argv[])
 {
-
     char * filepath = "./userlist.txt";
     int fd = open(filepath, O_CREAT |O_TRUNC| O_RDWR, PERMS);
     if (fd == -1) {
@@ -38,7 +37,7 @@ int main(int argc, char const *argv[])
     else{
         close(pipefd[1]);
         wait(&pid);
-        dup2(pipefd[0],STDIN_FILENO);//표준 출력으로부터 입력을 받는다.
+        dup2(pipefd[0],STDIN_FILENO);
 
         dup2(fd,STDOUT_FILENO);//표준 출력을 userlist.txt 로  redirection
         execl("/usr/bin/cut","cut","-d",":","-f","1",NULL);
