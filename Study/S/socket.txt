@@ -1,0 +1,23 @@
+#include <sys/socket.h>
+#include <sys/types.h>
+// socket() function ***************************
+// : create socket!!!
+
+// parameter : domain(communication domain), type(send type of data),
+// protocol(usually use 0)
+
+// return : (success : socket identifier). (fail : -1)
+
+// domain : between same system communication or ineternet communication !PLAG!
+// type   : data sending format !PLAG!
+
+// how to assign address info
+// 1 : in_addr      struct
+// 2 : sockaddr_in  struct
+// 3 : sockaddr     struct
+
+// server function
+// 1 : bind()   : assigned ip address and port num To socket
+// 2 : listen() :
+// 3 : accept() :
+// 4 :

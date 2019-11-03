@@ -1,0 +1,39 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch - Server",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/server.out",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": true,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "osx": {
+        "MIMode": "lldb",
+        "miDebuggerPath": "/usr/bin/lldb"
+      }
+    },
+    {
+      "name": "Launch - Client",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/client.out",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": true,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "osx": {
+        "MIMode": "lldb",
+        "miDebuggerPath": "/usr/bin/lldb"
+      }
+    }
+  ]
+}
