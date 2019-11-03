@@ -1,7 +1,3 @@
-/*
- * Student ID :2018203062
- * Name : 김수빈
- */
 #include "MyShm.h"
 #include <signal.h>
 #include <stdio.h>
@@ -50,9 +46,14 @@ void myfunc(void) {
     Calc calc;
     int data=0;
     memcpy(&calc, shmaddr, sizeof(Calc));
+    //shmaddr 로부터 calc 만큼 불러온다
+
     printf("Receive: %d %c %d\n", calc.x,calc.op,calc.y);
+
+    // 메세지 큐에서는 전송, 결과 구조체를 다 따로 정의했지만 여기는 아님.
     data = calculate(calc); // 계산결과를 data 에 저장
 
+    // 계산
 
     memcpy(shmaddr, &data, sizeof(int));
 
