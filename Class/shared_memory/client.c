@@ -20,15 +20,11 @@ int main(int argc, char const *argv[]) {
     int data = 0;
     mykey = ftok("mykey", 2);
     shmid = shmget(mykey, MAX_SHM_SIZE, IPC_CREAT);
-
     shmaddr = shmat(shmid, NULL, 0);
-    signal(SIGINT, signalHandler);
     signal(SIGUSR1, signalHandler);
-
     while (1) {
-        puts("Wait...");
-        pause();
-
+        printf("<< ");
+        scanf("%d", &data);
         fflush(stdout);
         fflush(stdin);
         memcpy(shmaddr, &data, sizeof(int));
@@ -36,22 +32,13 @@ int main(int argc, char const *argv[]) {
         kill(buf.shm_cpid, SIGUSR1);
         pause();
     }
-
 return 0;
 }
 
 void signalHandler(int signum) {
     int data = 0;
     if (signum == SIGUSR1) {
-        myfunc();
-    }else if(signum==SIGINT){
-        shmdt(shmaddr);
-        shmctl(shmid,IPC_RMID,NULL);
-        exit(0);
+        memcpy(&data, shmaddr, sizeof(int));
+        printf(">> %d\n", data);
     }
-}
-void myfunc(void){
-    struct shmid_ds buf;
-    Calc calc;
-
 }
