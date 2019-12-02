@@ -20,7 +20,7 @@ int main(int argc, char const *argv[])
     srand(time(NULL));
     fd=open(argv[1],O_WRONLY);
     dup2(fd,STDOUT_FILENO);
-
+        printf("my pid is : %d\n",getpid());
     while(1){
         num=rand()%10;
         printf("[%d] %d",getpid(),num);
