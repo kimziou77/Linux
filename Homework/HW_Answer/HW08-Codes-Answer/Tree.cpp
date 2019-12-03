@@ -41,17 +41,19 @@ void Tree::insert(int data) {
     return;
 }
 void Tree::display() {
-    display(this->rootnode);
+    display(this->rootnode, 0);
     return;
 }
-void Tree::display(TreeNode *curNode) {
-    if (curNode == NULL) {
+void Tree::display(TreeNode *curNode, int depth) {
+    int i;
+    if (curNode == NULL)
         return;
+    display(curNode->getRight(), depth + 1);
+    for (i = 0; i < depth; i++) {
+        std::cout << "   ";
     }
-    display(curNode->getLeft());
-    std::cout << "  ";
-    std::cout << curNode->getData();
-    display(curNode->getRight());
+    std::cout << curNode->getData() << std::endl;
+    display(curNode->getLeft(), depth + 1);
     return;
 }
 bool Tree::search(int data) {

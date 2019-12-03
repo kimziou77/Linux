@@ -15,7 +15,7 @@ class Tree {
     bool remove(int data);
 
   private:
-    void display(TreeNode *curNode);
+    void display(TreeNode *curNode, int depth);
     bool search(TreeNode *curNode, int data);
     bool remove(TreeNode *preNode, TreeNode *curNode, int data);
     TreeNode *find_max_node(TreeNode *preNode, TreeNode *curNode);

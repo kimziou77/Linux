@@ -22,7 +22,7 @@ int main() {
     cout << "--- Tree search ---" << endl;
     tree.search(30);
     tree.search(80);
-    tree.search(35);
+    tree.search(40);
     cout << endl;
 
     cout << "--- Tree remove ---" << endl;
@@ -33,9 +33,6 @@ int main() {
     tree.display();
     cout << endl << endl;
     tree.remove(75);
-    tree.display();
-    cout << endl << endl;
-    tree.remove(90);
     tree.display();
     cout << endl << endl;
     tree.remove(25);
