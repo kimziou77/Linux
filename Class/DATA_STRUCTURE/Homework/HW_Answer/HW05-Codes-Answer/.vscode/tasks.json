@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build - Basic",
+      "type": "shell",
+      "command": "gcc",
+      "args": ["basic.c", "-o", "basic.out", "-g"],
+      "group": "build"
+    },
+    {
+      "label": "Build - Bonus",
+      "type": "shell",
+      "command": "gcc",
+      "args": ["bonus.c", "-o", "bonus.out", "-g"],
+      "group": "build"
+    },
+    {
+      "label": "Test - Basic",
+      "type": "shell",
+      "command": "./${workspaceFolder}/basic.out",
+      "group": "test"
+    },
+    {
+      "label": "Test - Bonus",
+      "type": "shell",
+      "command": "./${workspaceFolder}/bonus.out",
+      "group": "test"
+    }
+  ]
+}
