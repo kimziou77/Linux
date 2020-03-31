@@ -1,10 +1,7 @@
-all: mywrite.out myread.out
+all: main.out
 
-mywrite.out: mywrite.c MyStudent.h
-	gcc mywrite.c -o mywrite.out
-
-myread.out: myread.c MyStudent.h
-	gcc myread.c -o myread.out
+main.out: hw1.c hw1.h main.c
+	gcc hw1.c main.c -o main.out
 
 clean:
-	rm *.out student.dat
+	rm *.out *.o

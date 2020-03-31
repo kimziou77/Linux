@@ -1,113 +1,143 @@
 #include "hw1.h"
 
-enum Bool { false, true };
-void Init() {}
+enum { FALSE, TRUE };
 
-//ì•ë’¤ NULL ì„¤ì •í•´ì£¼ê¸°, FreeListì—ì„œ
-// elementCount ì¦ê°ì‹œì¼œì£¼ê¸°
 int hash_function(int objectNumber, int array_length) {
-    // if (array_length == 0) return OBJ_INVALID;
-    return objectNumber % array_length;
+	return objectNumber % array_length;
+}
+void Init() {
+	pFreeListHead = NULL;
+	pFreeListTail = NULL;
+	for (int i = 0; i < HASH_TBL_SIZE; i++) {
+		pHashTableEnt[i].pHead = NULL;
+		pHashTableEnt[i].pTail = NULL;
+	}
 }
 
-void InsertObjectToTail(Object *pObj, int ObjNum) {
-    int idx = hash_function(ObjNum, HASH_TBL_SIZE);
-    HashTableEnt *table = &pHashTableEnt[idx];
+void InsertObjectToTail(Object* pObj, int ObjNum) {
 
-    if (pHashTableEnt[idx].pHead == NULL) { // ã…->null
-        pHashTableEnt[idx].pHead = pObj;    // ã…->headã…
-        pHashTableEnt[idx].pTail = pObj;    // ã…->headã…(tail)
-        pHashTableEnt[idx].elmtCount = 1;
-        return;
-    } else {                                     // ã…->ã…->ã…...
-        pHashTableEnt[idx].pTail->phNext = pObj; // tailã…  -> newã…
-        pObj->phPrev = pHashTableEnt[idx].pTail; // tailã… <-> newã…
-        pHashTableEnt[idx].pTail = pObj;         // ã… <-> tailã…
-        pHashTableEnt[idx].elmtCount++;
-    }
+	int idx = hash_function(ObjNum, HASH_TBL_SIZE);
+	pObj->objnum = ObjNum;
+
+	if (pHashTableEnt[idx].pHead == NULL) {	// ¤±->null
+		pHashTableEnt[idx].pHead = pObj;	// ¤±->head¤±
+		pHashTableEnt[idx].pTail = pObj;	// ¤±->head¤±(tail)
+
+		pHashTableEnt[idx].elmtCount = 1;
+	}
+	else {// ¤±->¤±->¤±...
+		pHashTableEnt[idx].pTail->phNext = pObj;	// tail¤±  -> new¤±
+		pObj->phPrev = pHashTableEnt[idx].pTail;	// tail¤± <-> new¤±
+		pHashTableEnt[idx].pTail = pObj;			// ¤± <-> tail¤±
+
+		pHashTableEnt[idx].elmtCount++;
+	}
 }
 
-void InsertObjectToHead(Object *pObj, int objNum) {
-    int idx = hash_function(objNum, HASH_TBL_SIZE);
-
-    if (pHashTableEnt[idx].pHead == NULL) { // ã…->null
-        pHashTableEnt[idx].pHead = pObj;    // ã…->headã…
-        pHashTableEnt[idx].pTail = pObj;    // ã…->headã…(tail)
-        pHashTableEnt[idx].elmtCount = 1;
-        return;
-    } else {                                     // ã…->ã…->ã…...
-        pObj->phNext = pHashTableEnt[idx].pHead; // new  ã…  -> ã… head
-        pHashTableEnt[idx].pHead->phPrev = pObj; // new  ã… <-> ã… head
-        pHashTableEnt[idx].pHead = pObj;         // head ã… <-> ã…
-        pHashTableEnt[idx].elmtCount++;
-    }
+void InsertObjectToHead(Object* pObj, int objNum) {
+	int idx = hash_function(objNum, HASH_TBL_SIZE);
+	pObj->objnum = objNum;
+	if (pHashTableEnt[idx].pHead == NULL) {	// ¤±->null
+		pHashTableEnt[idx].pHead = pObj;	// ¤±->head¤±
+		pHashTableEnt[idx].pTail = pObj;	// ¤±->head¤±(tail)
+		pHashTableEnt[idx].elmtCount = 1;
+	}
+	else {// ¤±->¤±->¤±...
+		pObj->phNext = pHashTableEnt[idx].pHead;	//new  ¤±  -> ¤± head
+		pHashTableEnt[idx].pHead->phPrev = pObj;	//new  ¤± <-> ¤± head
+		pHashTableEnt[idx].pHead = pObj;			//head ¤± <-> ¤±
+		pHashTableEnt[idx].elmtCount++;
+	}
 }
 
-Object *GetObjectByNum(int objnum) {
-    int idx = hash_function(objnum, HASH_TBL_SIZE);
-    Object *cursor = pHashTableEnt[idx].pHead;
-    while (cursor) {
-        if (cursor->objnum == objnum) {
-            return cursor;
-        }
-        cursor = cursor->phNext;
-    }
-    return NULL;
+Object* GetObjectByNum(int objNum) {
+	int idx = hash_function(objNum, HASH_TBL_SIZE);
+	Object* cursor = pHashTableEnt[idx].pHead;
+
+	while (cursor) {
+		if (cursor->objnum == objNum) {
+			return cursor;
+		}
+		cursor = cursor->phNext;
+	}
+	return NULL;
 }
 
-Object *GetObjectFromObjFreeList() {
-    if (pFreeListTail == NULL)
-        return NULL;
-    Object *target = pFreeListTail;
+Object* GetObjectFromObjFreeList() {
+	if (pFreeListTail == NULL) return NULL;
+	Object* target = pFreeListTail;
 
-    Object *prev = target->phPrev;
-    prev->phNext = pFreeListHead;
-    pFreeListHead->phPrev = prev;
-    pFreeListTail = prev;
+	//prev°¡ nullptrÀÌ¾úÀ½.
+	Object* prev = target->phPrev;
 
-    target->phNext = NULL;
-    target->phPrev = NULL;
-    return target;
+	if (prev == NULL) {
+		pFreeListHead = NULL;
+		pFreeListTail = NULL;
+	}
+	else {
+		prev->phNext = NULL;  //¤±(prev)->null, ¤±(target,tail)
+		//pFreeListHead->phPrev = prev;
+		pFreeListTail = prev;  //¤±(prev,tail), ¤±(target)
+
+		target->phNext = NULL;
+		target->phPrev = NULL;
+	}
+	return target;
 }
 
-BOOL DeleteObject(Object *pObj) {
-    int idx = hash_function(pObj->objnum, HASH_TBL_SIZE);
+BOOL DeleteObject(Object* pObj) {
 
-    // no Object -> false;
-    if (GetObjectByNum(pObj->objnum) == NULL)
-        return false;
+	int idx = hash_function(pObj->objnum, HASH_TBL_SIZE);
+	Object* obj = GetObjectByNum(pObj->objnum);
 
-    if (pHashTableEnt[idx].pHead == pObj) { //ã…head(obj) <-> ã… <-> ã…....
-        pHashTableEnt[idx].pHead = pObj->phNext; //ã…(obj) <-> ã…head <-> ã…...
-        pHashTableEnt[idx].pHead->phPrev = NULL; //ã…(obj)  -> ã…head <-> ã…...
-    } else { // ã…head <-> ã…(obj) <-> ã…...
-        Object *target = GetObjectByNum(pObj->objnum);
-        Object *prev = target->phPrev; // ã…prev <-> ã… <-> ã…next
-        Object *next = target->phNext;
-        prev->phNext = next; // ã…prev  -> ã…next
-        next->phPrev = prev; // ã…prev <-> ã…next
-    }
-    pObj->phNext = NULL;
-    pObj->phPrev = NULL;
-    pHashTableEnt[idx].elmtCount--;
-    return true;
+	//no Object -> false;
+	if (obj == NULL) return FALSE;
+
+	if (pHashTableEnt[idx].pHead == pObj){ // 1. ÇìµåÂÊ¿¡ À§Ä¡
+		if (pHashTableEnt[idx].elmtCount == 1) { // ÇìµåÂÊ¿¡ »èÁ¦ÇÏ·Á´Â°Í ÇÏ³ª¸¸ Á¸Àç
+			pHashTableEnt[idx].pHead = NULL;
+		}
+		else{
+			pHashTableEnt[idx].pHead = pObj->phNext;	//¤±(obj) <-> ¤±head <-> ¤±...
+			pHashTableEnt[idx].pHead->phPrev = NULL;	//¤±(obj)  -> ¤±head <-> ¤±...
+		}
+	}
+	else if (pHashTableEnt[idx].pTail == pObj) { // 2. Å×ÀÏÂÊ¿¡ À§Ä¡
+		if (pHashTableEnt[idx].elmtCount == 1) { // Å×ÀÏÂÊ¿¡ »èÁ¦ÇÏ·Á´Â°Í ÇÏ³ª¸¸ Á¸Àç
+			pHashTableEnt[idx].pTail = NULL;
+		}
+		else {
+			pHashTableEnt[idx].pTail = pObj->phPrev;
+			pHashTableEnt[idx].pTail->phNext = NULL;
+		}
+	}
+	else {									// 3. Áß¾Ó¿¡ À§Ä¡
+		Object* target = obj;
+		Object* prev = target->phPrev;					// ¤±prev <-> ¤± <-> ¤±next
+		Object* next = target->phNext;
+		prev->phNext = next;							// ¤±prev  -> ¤±next
+		next->phPrev = prev;							// ¤±prev <-> ¤±next
+	}
+
+
+	pObj->phNext = NULL;
+	pObj->phPrev = NULL;
+	pHashTableEnt[idx].elmtCount--;
+	return TRUE;
 }
 
-void InsertObjectIntoObjFreeList(Object *pObj) {
-    // if needed, the number of the object is set to OBJ_INVALID
-    // head->prev==NULL?
-    // into the head
-    if (pFreeListHead == NULL) {
-        pFreeListHead = pObj;
-        pFreeListTail = pObj;
-    } else {
+void InsertObjectIntoObjFreeList(Object* pObj) {
+	pObj->phNext = NULL;	pObj->phPrev = NULL;
 
-        pFreeListTail->phNext = pObj;
-        pFreeListHead->phPrev = pObj;
+	if (pFreeListHead == NULL) {//ºñ¾îÀÖ´Ù¸é ³Ö´Â´Ù.
+		pFreeListHead = pObj;
+		pFreeListTail = pObj;
+	}
+	else {
+		pFreeListHead->phPrev = pObj; // null<- ¤±(obj) <- ¤±(head)
 
-        pObj->phPrev = pFreeListTail;
-        pObj->phNext = pFreeListHead; // head <-> obj <-> tail
+		pObj->phNext = pFreeListHead;  //¤±(obj)<-> ¤±(head)
 
-        pFreeListHead = pObj;
-    }
+		pFreeListHead = pObj; // ¤±(obj,head)<->¤±
+	}
 }
