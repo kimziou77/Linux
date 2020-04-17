@@ -2,11 +2,6 @@
 #include "Scheduler.h"
 #include "Thread.h"
 
-#include<stdio.h>
+#include <stdio.h>
 
-int main(void)
-{
-	
-}
-
-
+int main(void) { printf("hello\n"); }
