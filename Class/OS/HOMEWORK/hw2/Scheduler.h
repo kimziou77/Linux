@@ -3,6 +3,10 @@
 
 #include "Thread.h"
 
+//TODO: 임시로 여기다가 선언 넣어줍미당
+void * AppTask(void* param);
+//-----------------------------
+
 int	RunScheduler( void );
 void	__ContextSwitch(int curpid, int newpid);
 
@@ -10,4 +14,3 @@ void	__ContextSwitch(int curpid, int newpid);
 Thread* pCurrentThead;
 
 #endif
-

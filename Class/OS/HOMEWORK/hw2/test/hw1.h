@@ -1,9 +1,3 @@
-#include <sched.h>
-#include <sys/types.h>
-#include <signal.h>
-#include <unistd.h>
-#include "Thread.h"
-
 #ifndef __HW1_H__
 #define __HW1_H__
 
@@ -17,19 +11,21 @@ typedef struct Object Object;
 typedef int BOOL;
 
 struct Object {
-    //얘는 TCB로 변환될것
+    int objnum;
+    Object *phPrev;
+    Object *phNext;
 };
 
-typedef struct __ReadyQueueEnt {
-    int queueCount;
+typedef struct __HashTableEnt {
+    int elmtCount;
     Object *pHead;
     Object *pTail;
-} __ReadyQueueEnt;
+} HashTableEnt;
 
-//HashTableEnt pHashTableEnt[HASH_TBL_SIZE];
+HashTableEnt pHashTableEnt[HASH_TBL_SIZE];
 
-Thread* *pWaitingQueueHead;
-Thread* *pWaitingQueueTail;
+Object *pFreeListHead;
+Object *pFreeListTail;
 
 void Init();
 void InsertObjectToTail(Object *pObj, int ObjNum);

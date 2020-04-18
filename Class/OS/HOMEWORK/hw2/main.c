@@ -8,7 +8,10 @@ int main(void) {
 
     int arg;
     Init();
-    
+
     thread_create(&tid,NULL,4,AppTask,&arg);
-    RunScheduler();
+    //TestCase도 스레드로 돌아갈 것임.
+    RunScheduler();//while(1);
+    //TODO: 여기서 부터 분석해보기
+
 }
