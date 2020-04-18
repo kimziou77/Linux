@@ -8,7 +8,7 @@ int main(void) {
 
     int arg;
     Init();
-
+    
     thread_create(&tid,NULL,4,AppTask,&arg);
     RunScheduler();
 }

@@ -22,13 +22,24 @@ typedef enum{
 	THREAD_STATUS_ZOMBIE = 3,
 } ThreadStatus;
 
-typedef struct _Thread{
-	int		stackSize;
-	void*		stackAddr;
-	ThreadStatus	status;
+//과제 1에 사용됐던 Object 와 비슷하게 생겼다.
+//과제 1엣 했던 해쉬 테이블
+
+//사용 안되는 변수가 있을 수도 있음.
+typedef struct _Thread{ //TCB
+//스레드 정보를 저장하는 구조체,
+//스케줄링에 필요한 정보를 저장한다.
+//TODO: 스레드 생성시 해당 스레드를 위한 TCB를 메모리에서 할당후 초기화 시켜준다.
+//스레드 상태에 따라 ready/waiting queue 에 저장된다.
+	int		stackSize;//스레드 스택사이즈
+	void*		stackAddr;//스택의 시작 주소
+	ThreadStatus	status; //위쪽 enum참조
+	//running 이지 않은이상, ready(1) wait(2) 상태이어야 한다.
+
 	int		exitCode;
-	pid_t		pid;
+	pid_t		pid; //스레드 아이디 tid?? clone으로 생성된 pid를 여기에 저장한다.
 	int		priority;
+	//서로 인접한 스레드와 연결
 	Thread*		phNext;
 	Thread*		phPrev;
 } Thread;
@@ -41,8 +52,12 @@ typedef struct _ReadyQueueEnt {
 
 typedef struct _ThreadTblEnt {
 	BOOL	bUsed;   
-	Thread* pThread;
+	Thread* pThread;//[N]개를 정의할것?
 } ThreadTblEnt;
+//TODO:얘를 통해 모든 스레드들을 관리하고 있어야 한다.
+//ThreadTblEnt의 index번호를 스레드 아이디로 한다.
+//유효현 tcb를 가리키고 있는지 판단하기 위해 bUsed flag를 사용한다.
+//스레드 생성시에 0부터 빈 entry를 찾아 할당한다.
 
 
 /* head and tail pointers for ready queue */
@@ -53,7 +68,15 @@ Thread* pWaitingQueueHead;
 Thread* pWaitingQueueTail;
 ThreadTblEnt pThreadTbEnt[MAX_THREAD_NUM];
 
-int 		thread_create(thread_t *thread, thread_attr_t *attr, int priority, void *(*start_routine) (void *), void *arg);
+//나는 다음을 구현해야한다.
+//N개의 스레드 중에 한개만 실행해야 하고 나머지 스레드는 ready 상태로 정지해야 한다.
+//priority-based round robin
+
+int 		thread_create(thread_t *thread, thread_attr_t *attr, int priority, void *(*start_routine) (void *), void *arg);//여기서 스레드를 생성할 때 clone 함수를 사용해야한다.
+//(생성된 thread_id 반환, NULL, 우선순위,스레드가 실행할 함수 이름, 실행함수인자)
+
+//내부적으로 나머지 스레드들은 모두 정지해야하는데, signal을 사용할것임.
+//레디-> 꺠울때도 시그널
 int 		thread_suspend(thread_t tid);
 int 		thread_cancel(thread_t tid);
 int		thread_resume(thread_t tid);
@@ -61,4 +84,3 @@ thread_t 		thread_self();
 
 
 #endif /* __THREAD_H__ */
-
