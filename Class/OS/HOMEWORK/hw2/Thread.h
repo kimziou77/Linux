@@ -5,10 +5,12 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #define TIMESLICE		(2)
 #define MAX_READYQUEUE_NUM	(8)	/* Ready queue의 개수 */
 #define MAX_THREAD_NUM		(64)	/* 생성 가능한 최대 Thread의 개수 */
+#define _GNU_SOURCE
 
 typedef int	BOOL;
 typedef int	thread_t;

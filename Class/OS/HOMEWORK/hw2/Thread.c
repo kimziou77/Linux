@@ -8,12 +8,14 @@ int thread_create(thread_t *thread, thread_attr_t *attr, int priority, void *(*s
     //생성된 스레드는 priority가 지정하는 ready queue로 넣는다.
     //ThreadTblEnt에 넣고, 
     thread_t pid = clone(); //thread_t ?? 클론하면 어떻게 되는거지...
-    //TODO:  여기 malloc 했어요오오오
+    //TODO:  여기 malloc 했어요오오오 deallocate장소 항상확인할것
     Thread* pNewThread = (Thread*)malloc(sizeof(Thread));//TCB 하나 만들어서 clone 한 스레드를 관리한다??d이런 느낌인가
     pNewThread->pid=pid;
     pNewThread->priority=priority;
     //
     kill(pid,SIGSTOP);//클론으로 실행된 스래드를 강제정지시킨다.
+
+    
     //TODO: TCB 할당.초기화;->하는중임 나중에 정확히 다시 채우기
     
     //branch..//실행중인 TCB랑 새로 생성된 TCB의 우선순위를 비교한다.
@@ -33,9 +35,11 @@ int thread_create(thread_t *thread, thread_attr_t *attr, int priority, void *(*s
 
 int thread_suspend(thread_t tid)
 // tid 일시정지시키는 함수 wiating queue의 tail로 들어가게 되는데
-//실행중이 아니라 이미 ready queue 또는 waiting queue 에 들어가 있을 수도 있다.
+// 이미 ready queue 또는 waiting queue 에 들어가 있을 수도 있다.
 {
     //자기 자신을 멈추는 동작은 non-precondition
+
+
     if(tid>=MAX_THREAD_NUM) return FAILED;
     //해당 pid를 찾아서 처리해준다.
     pThreadTbEnt[tid].pThread->status= THREAD_STATUS_WAIT;
@@ -44,7 +48,7 @@ int thread_suspend(thread_t tid)
     return SUCCESS;
     
     //TODO: 여기서 실패를 했다는건 무슨 뜻이지?
-    //이미 웨잇상태라는건가..? 아니면 tid가 잘못된 tid라는건가?
+    //이미 웨잇상태라는건가..? 아니면 tid가 잘못된 tid라S는건가?
     
 }
 
@@ -57,6 +61,7 @@ int thread_cancel(thread_t tid)//자기자신을 캔슬하는경우는 non-preco
     //  TCB를 레디, 웨이팅 큐 에서 뺴낸다.
     //  Deallocate tid's thread TCB
     return SUCCESS;
+    
 }
 
 int thread_resume(thread_t tid)

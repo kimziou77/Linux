@@ -1,17 +1,22 @@
 #include <stdio.h>
-void foo1(void* arg){
+// int clone(int (*fn)(void *), void *child_stack,
+    //       int flags, void *arg, ...
+    //       /* pid_t *ptid, struct user_desc *tls, pid_t *ctid */ );
+    
+int foo1(void* arg){
 
     while(1);
 }
-void foo2(void* arg){
+int foo2(void* arg){
 
     while(1);
 }
-void foo3(void* arg){
+int foo3(void* arg){
 
     while(1);
 }
 void * AppTask(void* param){
+    TestCase();
     TestCase();
     return NULL;
 }

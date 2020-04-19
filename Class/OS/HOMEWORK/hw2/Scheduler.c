@@ -4,15 +4,7 @@
 
 //TODO: 여기다 정의해도 되나?
 enum{FALSE=0,TRUE=1};
-void Init(void){
-    //Create ready queue and waiting queue
-    // Initailize thread scheduler
-    for(int i=0;i<MAX_THREAD_NUM;i++){
-        pThreadTbEnt[i].bUsed   = FALSE;
-        pThreadTbEnt[i].pThread = NULL;
-    }
-}
-//--------------------------------------------
+
 
 BOOL Is_Ready_Queue_Empty(){
     for(int i=0;i<MAX_READYQUEUE_NUM;i++){
