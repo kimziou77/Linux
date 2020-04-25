@@ -1,23 +1,26 @@
+#define _GNU_SOURCE
+#include <sched.h>
+#include <sys/types.h>
+#include <signal.h>
+#include <unistd.h>
+
 #include "Init.h"
 #include "Thread.h"
 #include "Scheduler.h"
 
 
-int thread_create(thread_t *thread, thread_attr_t *attr, int priority, void *(*start_routine) (void *), void *arg)
+int thread_create(thread_t *bthread, thread_attr_t *attr, int priority, void *(*start_routine) (void *), void *arg)
 {
     thread_t pid = clone(); //thread_t ??
     kill(pid,SIGSTOP);
     //Allocate TCB;
     //TCB initialize
-
     //branch..
-
 
 }
 
 int thread_suspend(thread_t tid)
 {
-
     //move TCB -> waiting queue
     //tid.status = waiting;
 
@@ -28,7 +31,6 @@ int thread_suspend(thread_t tid)
 int thread_cancel(thread_t tid)
 {
     //there is no self kill
-
     kill(tid,SIGKILL);
     //  from ready or waiting queue~
     //  remove TCB

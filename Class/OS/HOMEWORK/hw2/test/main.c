@@ -16,11 +16,8 @@ int threadFunc(void* a){
 }
 int main(void){
     void * stack;
-    void * stack;
-    void * stack;
-    void * stack;
     stack= malloc(STACK_SIZE);
-    pid_t pid;
+    
     pid_t pid;
     if(stack==0){
         perror("*malloc : could not allocate stack");

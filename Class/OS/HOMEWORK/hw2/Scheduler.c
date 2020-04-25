@@ -3,7 +3,7 @@
 #include "Scheduler.h"
 
 //TODO: 여기다 정의해도 되나?
-enum{FALSE=0,TRUE=1};
+
 
 
 BOOL Is_Ready_Queue_Empty(){
@@ -34,17 +34,11 @@ int RunScheduler( void )
     //알람이 울리면 RunScheduler 실행해주기?
 }
 
-
+//systemcall로 생성을 했으므로
+//systemcall을 이용해 contextSwitching을 할 것.
 void __ContextSwitch(int curpid, int newpid)
-{
-    //systemcall로 생성을 했으므로
-    //systemcall을 이용해 contextSwitching을 할 것.
-    
-    pid_t pCurPid = pThreadTbEnt[curpid].pThread->pid;
-    kill(pCurPid,SIGSTOP);//?
-    kill(curpid,SIGSTOP);
-
-    //TODO: 나는 이 pid와 table의 관계가 이해가 가지않는다...
-    kill(newpid,SIGCONT);
-    // pCurrentThead
+{//여기 인자로 들어오는거는 TCB의 thread id인가 아니면 그냥 pid 인가.....
+    kill(curpid, SIGSTOP);
+    kill(newpid, SIGCONT);
+    //pCurrentThead; 여기 TCB를 담아야 하는데 그러면 인자는 thread id 인가..?
 }

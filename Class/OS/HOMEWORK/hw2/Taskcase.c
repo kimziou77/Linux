@@ -3,15 +3,15 @@
     //       int flags, void *arg, ...
     //       /* pid_t *ptid, struct user_desc *tls, pid_t *ctid */ );
     
-int foo1(void* arg){
+void * foo1(void* arg){
 
     while(1);
 }
-int foo2(void* arg){
+void * foo2(void* arg){
 
     while(1);
 }
-int foo3(void* arg){
+void * foo3(void* arg){
 
     while(1);
 }
