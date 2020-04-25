@@ -1,9 +1,4 @@
 #define _GNU_SOURCE
-#include <sched.h>
-
-#include <sys/types.h>
-#include <signal.h>
-#include <unistd.h>
 
 
 #define STACK_SIZE 1024*64
@@ -17,7 +12,7 @@ int threadFunc(void* a){
 int main(void){
     void * stack;
     stack= malloc(STACK_SIZE);
-    
+
     pid_t pid;
     if(stack==0){
         perror("*malloc : could not allocate stack");
