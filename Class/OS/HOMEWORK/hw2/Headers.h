@@ -9,4 +9,8 @@
 enum{FALSE=0,TRUE=1};
 void * AppTask(void* param);
 void Tastcase(void);
+int find_tid(int pid);
+void print_pWaitingQueue();
+void print_pReadyQueue();
+void print_pThreadEnt();
 #endif

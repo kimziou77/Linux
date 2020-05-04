@@ -26,11 +26,15 @@ int thread_create(thread_t * thread, thread_attr_t *attr, int priority, void *(*
     pNewThread->pid=pid;
     pNewThread->priority=priority;
     pNewThread->stackSize=STACK_SIZE;
+    
     //pNewTCB->stackAddr=
 
     *thread = FindEmptyThreadTable();//thread_id 빈 TCB table을 찾아 id 값 할당해줌.
     //Thread  Table에 할당!!
     pThreadTbEnt[*thread].pThread = pNewThread;
+
+    
+    printf("새로 생성된 스레드의 우선순위 : %d\n",priority);
 
     //branch..//실행중인 TCB랑 새로 생성된 TCB의 우선순위를 비교한다.
     if(pCurrentThead == NULL){//현재 실행중인 스레드가 없다면
@@ -41,14 +45,16 @@ int thread_create(thread_t * thread, thread_attr_t *attr, int priority, void *(*
     else if(pCurrentThead->priority < pNewThread->priority){//수낮은게 우선순위높음
         pNewThread->status=THREAD_STATUS_READY;
         InsertThreadToReadyQueue(pNewThread,pNewThread->priority);//레디큐에 넣는다.
+        printf("thread create 레디큐에 넣는다 (else if)\n");
     }
     else{//생성된 스레드가 우선순위가 더 높다면 컨텍스트 스위칭
         InsertThreadToReadyQueue(pCurrentThead,pCurrentThead->priority);//실행중인 스레드를 레디큐로 옮기기
+        printf("thread create 생성된 스레드가 우선순위가 더 높음 ->컨텍스트 스위칭 (else)\n");
         pCurrentThead->status = THREAD_STATUS_READY;
 
         pNewThread->status=THREAD_STATUS_RUN;
         DeleteThreadFromReadyQueue(pNewThread);//current 레디큐에서 빼기
-
+        
         __ContextSwitch(pCurrentThead->pid,pNewThread->pid);
     }
 
@@ -142,7 +148,7 @@ thread_t thread_self()
     int pid= getpid();
     printf("Thread Self : %d \n",pid);
 
-    print_pThreadEnt();
+    
 
     for(int i=0;i<MAX_THREAD_NUM;i++){
         if(pThreadTbEnt[i].pThread->pid==pid){
@@ -217,4 +223,10 @@ void print_pWaitingQueue(){
         printf("%d ",t->pid);
     }
     printf("\n------------------------------\n");
+}
+int find_tid(int pid){
+    for(int i=0;i<MAX_THREAD_NUM;i++){
+        if(pThreadTbEnt[i].pThread->pid==pid)
+            return i;
+    }
 }

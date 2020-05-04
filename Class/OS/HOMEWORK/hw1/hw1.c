@@ -2,10 +2,10 @@
 
 enum { FALSE, TRUE };
 
-int hash_function(int objectNumber, int array_length) {
+int hash_function(int objectNumber, int array_length) {//v find tid
 	return objectNumber % array_length;
 }
-void Init() {
+void Init() {//v Init
 	pFreeListHead = NULL;
 	pFreeListTail = NULL;
 	for (int i = 0; i < HASH_TBL_SIZE; i++) {
@@ -14,7 +14,7 @@ void Init() {
 	}
 }
 
-void InsertObjectToTail(Object* pObj, int ObjNum) {
+void InsertObjectToTail(Object* pObj, int ObjNum) {//v insert Trhread To Ready Queue
 
 	int idx = hash_function(ObjNum, HASH_TBL_SIZE);
 	pObj->objnum = ObjNum;
@@ -34,7 +34,7 @@ void InsertObjectToTail(Object* pObj, int ObjNum) {
 	}
 }
 
-void InsertObjectToHead(Object* pObj, int objNum) {
+void InsertObjectToHead(Object* pObj, int objNum) { //헤드로 넣을 필요 xxxx
 	int idx = hash_function(objNum, HASH_TBL_SIZE);
 	pObj->objnum = objNum;
 	if (pHashTableEnt[idx].pHead == NULL) {	// ㅁ->null
@@ -50,7 +50,7 @@ void InsertObjectToHead(Object* pObj, int objNum) {
 	}
 }
 
-Object* GetObjectByNum(int objNum) {
+Object* GetObjectByNum(int objNum) {// v GetThreadbyPid
 	int idx = hash_function(objNum, HASH_TBL_SIZE);
 	Object* cursor = pHashTableEnt[idx].pHead;
 
@@ -63,7 +63,7 @@ Object* GetObjectByNum(int objNum) {
 	return NULL;
 }
 
-Object* GetObjectFromObjFreeList() {
+Object* GetObjectFromObjFreeList() {//v GetThreadFromWaitingQueue
 	if (pFreeListTail == NULL) return NULL;
 	Object* target = pFreeListTail;
 
@@ -85,7 +85,7 @@ Object* GetObjectFromObjFreeList() {
 	return target;
 }
 
-BOOL DeleteObject(Object* pObj) {
+BOOL DeleteObject(Object* pObj) {//Delete Thread From ReadyQueue
 
 	int idx = hash_function(pObj->objnum, HASH_TBL_SIZE);
 	Object* obj = GetObjectByNum(pObj->objnum);
