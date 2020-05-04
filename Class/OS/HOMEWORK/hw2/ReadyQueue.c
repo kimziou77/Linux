@@ -1,4 +1,4 @@
-#include "ReadyQueue.h"
+#include "Headers.h"
 
 void InsertThreadToReadyQueue(Thread *pNewThread, int priority){
     //Thread -> Ready

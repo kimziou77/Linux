@@ -1,8 +1,4 @@
-#include "Init.h"
-#include "Thread.h"
-#include "Scheduler.h"
-#include "ReadyQueue.h"
-
+#include "Headers.h"
 enum{FAILED=-1,SUCCESS=0};
 #define STACK_SIZE 1024*64
 
@@ -138,4 +134,45 @@ thread_t thread_self()
         if(pThreadTbEnt[i].pThread==pid)
             return i;// thread ID
     }
+}
+
+int thread_join(thread_t tid, void ** retval){
+    //child의 TCB랑 child의 thread status를 가지고 온다.
+
+    //이때 join을 하기 앞서, child가 먼저 종료되었을 수 있다. 이 경우를 확인하기 위해 Child가 좀비인지를 확인하자
+    /*
+        if child != 좀비
+        {
+            1. this.status = waiting 로 셋팅. 왜냐면 child가 종료될 때 까지 기다려야 해서.
+            2. TCB를 waiting queue로 보낸다.
+
+            새 스레드를 선택해서 레디큐에서 뺀후에
+            상태를 running으로 바꾸고
+            
+            contextSwitching해준다.
+
+            ---그리고 정지되어있는 상태.--- waiting 
+            이제 Parent가 깨어났음 -> child thread가 종료되었음.
+            : SIGCHLD시그널이 child스레드로부터 생성되었음.
+              Signal handler 구현 밑에서부터 코드가 시작되도록 구현해야한다.
+
+            1. 만약 여기서 현재실행중인  CPU보다 우선순위가 높다면 바로 running으로 간다.
+            2. 우선순위가 낮다면 ready 상태로 변경
+        }
+        
+        //Zombie Reaping작업 :child thread 청소
+
+        1. child의 TCB안에 있는 exitCode 를 retVal에 할당해준다.
+        2. Child의 TCB를 waiting queue에서 지우고,
+        child  TCB를 할당해제한다.
+        Free(Child)
+
+    */
+   
+}
+int thread_exit(void * retval){
+    
+
+
+
 }

@@ -1,6 +1,4 @@
-#include "Init.h"
-#include "Scheduler.h"
-#include "Thread.h"
+#include "Headers.h"
 
 int main(void) {
     thread_t tid;

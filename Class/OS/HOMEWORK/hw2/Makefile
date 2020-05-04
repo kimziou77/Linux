@@ -1,13 +1,22 @@
 all: main.out
 
-main.out : Thread.c Scheduler.c main.c
-	gcc main.c Thread.c Scheduler.c -o main.out
+main.out : Thread.o Scheduler.o main.o ReadyQueue.o Init.o
+	gcc -o main.out main.o Thread.o Scheduler.o ReadyQueue.o Init.o
 
-Tread.o: Thread.c Thread.h
-	gcc Thread.c -o Thread.o
+main.o : main.c Headers.h
+	gcc -c -o main.o main.c
 
-Scheduler.o : Scheduler.c Scheduler.h
-	gcc Scheduler.c -o Scheduler.o
+Init.o : Init.c Headers.h
+	gcc -c -o Init.o Init.c	
+
+Scheduler.o : Scheduler.c Headers.h
+	gcc -c -o Scheduler.o Scheduler.c
+
+Tread.o: Thread.c Headers.h
+	gcc -c -o Thread.o Thread.c 
+
+ReadyQueue.o : ReadyQueue.c Headers.h
+	gcc -c -o ReadyQueue.o ReadyQueue.c
 
 clean:
 	rm *.out *.o

@@ -65,4 +65,7 @@ int 		thread_cancel(thread_t tid);
 int		thread_resume(thread_t tid);
 thread_t 		thread_self();
 
+int thread_join(thread_t tid, void ** retval);
+int thread_exit(void * retval);
+
 #endif /* __THREAD_H__ */
