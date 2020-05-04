@@ -4,6 +4,7 @@
 #include "Thread.h"
 #include "Scheduler.h"
 #include "ReadyQueue.h"
+#include <stdio.h>
 
 enum{FALSE=0,TRUE=1};
 void * AppTask(void* param);

@@ -11,7 +11,7 @@ int FindEmptyThreadTable()
         }
     }
 }
-int thread_create(thread_t *thread, thread_attr_t *attr, int priority, void *(*start_routine) (void *), void *arg)
+int thread_create(thread_t * thread, thread_attr_t *attr, int priority, void *(*start_routine) (void *), void *arg)
 {
     char* pStack;
     pStack= malloc(STACK_SIZE);
@@ -28,9 +28,9 @@ int thread_create(thread_t *thread, thread_attr_t *attr, int priority, void *(*s
     pNewThread->stackSize=STACK_SIZE;
     //pNewTCB->stackAddr=
 
-    thread = FindEmptyThreadTable();//thread_id 빈 TCB table을 찾아 id 값 할당해줌.
+    *thread = FindEmptyThreadTable();//thread_id 빈 TCB table을 찾아 id 값 할당해줌.
     //Thread  Table에 할당!!
-    pThreadTbEnt[(int)thread].pThread = pNewThread;
+    pThreadTbEnt[*thread].pThread = pNewThread;
 
     //branch..//실행중인 TCB랑 새로 생성된 TCB의 우선순위를 비교한다.
     if(pCurrentThead == NULL){//현재 실행중인 스레드가 없다면
@@ -40,15 +40,15 @@ int thread_create(thread_t *thread, thread_attr_t *attr, int priority, void *(*s
     }
     else if(pCurrentThead->priority < pNewThread->priority){//수낮은게 우선순위높음
         pNewThread->status=THREAD_STATUS_READY;
-        InsertThreadToReadyQueue(pNewThread,pNewThread->priority);
+        InsertThreadToReadyQueue(pNewThread,pNewThread->priority);//레디큐에 넣는다.
     }
     else{//생성된 스레드가 우선순위가 더 높다면 컨텍스트 스위칭
         InsertThreadToReadyQueue(pCurrentThead,pCurrentThead->priority);//실행중인 스레드를 레디큐로 옮기기
-        pCurrentThead->status=THREAD_STATUS_READY;
+        pCurrentThead->status = THREAD_STATUS_READY;
 
         pNewThread->status=THREAD_STATUS_RUN;
         DeleteThreadFromReadyQueue(pNewThread);//current 레디큐에서 빼기
-        
+
         __ContextSwitch(pCurrentThead->pid,pNewThread->pid);
     }
 
@@ -59,6 +59,8 @@ int thread_suspend(thread_t tid)
 // tid 일시정지시키는 함수 wiating queue의 tail로 들어가게 되는데
 // 이미 ready queue 또는 waiting queue 에 들어가 있을 수도 있다.
 {
+    printf("현재 thread : %d\n",thread_self());
+
     //자기 자신을 멈추는 동작은 non-precondition
     if(tid<0 || tid >= MAX_THREAD_NUM) return FAILED;//배열 인덱스초과 -> FAILED
 
@@ -68,11 +70,20 @@ int thread_suspend(thread_t tid)
     int pid = pThreadTbEnt[tid].pThread->pid;
 
     if(status==THREAD_STATUS_RUN){
+        printf("SIGSTOP1\n");
         kill(pid,SIGSTOP);
+        printf("SIGSTOP2\n");
+        __ContextSwitch(pid,pReadyQueueEnt->pTail->pid);//레디큐 에 마지막애로 CS
         //Waiting Queue의 Tail에 넣는다.
     }
     else if(status==THREAD_STATUS_READY){
         //TODO: ready에 있는것도 waiting queue 로 넣어야하는건가 가만히 냅두나?
+        // -> waiting queue를 넣는걸로 가정하고 프로그램을 짜보겠음
+        int po = pThreadTbEnt[tid].pThread->priority;
+        for(int i=0;i<pReadyQueueEnt[po].queueCount;i++){
+            
+            printf("Thread가 ready 상태이고 waiting queue로 넣어야 할 차례입니다\n");
+        }
     }
     else if(status==THREAD_STATUS_WAIT){
         //noting happened
@@ -129,11 +140,17 @@ int thread_resume(thread_t tid)
 thread_t thread_self()
 {
     int pid= getpid();
+    printf("Thread Self : %d \n",pid);
+
+    print_pThreadEnt();
 
     for(int i=0;i<MAX_THREAD_NUM;i++){
-        if(pThreadTbEnt[i].pThread==pid)
+        if(pThreadTbEnt[i].pThread->pid==pid){
+            //printf("현재 스레드 아이디는 : %d\n",i);
             return i;// thread ID
+        }            
     }
+    printf("NONE ID \n");
 }
 
 int thread_join(thread_t tid, void ** retval){
@@ -172,7 +189,32 @@ int thread_join(thread_t tid, void ** retval){
 }
 int thread_exit(void * retval){
     
+}
+void print_pThreadEnt(){
+    printf("-------pThreadEnt----------------\n");
+    for(int i=0;i<MAX_THREAD_NUM && pThreadTbEnt[i].bUsed ;i++){
+        printf("%d ",pThreadTbEnt[i].pThread->pid);
+    }
+    printf("\n------------------------------\n");
+}
+void print_pReadyQueue(){
+    printf("-------pReadyQueue----------------\n");
+    for(int i=0;i<MAX_READYQUEUE_NUM;i++){
+        Thread* t = pReadyQueueEnt[i].pHead;
+        for(int j=0;j!=pReadyQueueEnt->queueCount && t;j++){
+            printf("%d ",t->pid);
+            t = t->phNext;
+        }
+    }
+    printf("\n------------------------------\n");
+}
 
+void print_pWaitingQueue(){
+    printf("-------pWaitingQueue---------------\n");
+    Thread * t = pWaitingQueueHead;
 
-
+    for(int i=0;t!=pWaitingQueueTail; t=t->phNext){
+        printf("%d ",t->pid);
+    }
+    printf("\n------------------------------\n");
 }

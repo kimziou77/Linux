@@ -2,30 +2,38 @@
 void alrmHandler(int signum);
 
 void * foo1(void* arg){
-
+    printf("Hello I'm foo1\n");
     while(1);
 }
 void * foo2(void* arg){
-
+    printf("Hello I'm foo2\n");
     while(1);
 }
 void * foo3(void* arg){
-
+    printf("Hello I'm foo3\n");
     while(1);
 }
-
 void TestCase(void){
+    printf("TestCase Start!\n");
+    printf("pid : %d",thread_self());
     int tid1,tid2,tid3;
     int arg1,arg2,arg3;
 
-    thread_create(&tid1,NULL,0,foo1,&arg1);
+    thread_create(&tid1,NULL,2,foo1,&arg1);
     thread_create(&tid2,NULL,1,foo2,&arg2);
-    thread_create(&tid3,NULL,2,foo3,&arg3);
-
-    thread_suspend(tid1);
+    thread_create(&tid3,NULL,3,foo3,&arg3);
+    
+    //printf("%d %d %d\n",tid1,tid2,tid3);
+    
+    printf("......suspend1....\n");
+    thread_suspend(tid3);
+    
+    printf("......suspend2....\n");
     thread_suspend(tid2);
-
+    
+    printf("......resume....\n");
     thread_resume(tid1);
+    
     while(1);
 }
 void * AppTask(void* param)

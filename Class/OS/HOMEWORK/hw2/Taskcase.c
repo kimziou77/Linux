@@ -11,10 +11,7 @@ void * foo3(void* arg){
 
     while(1);
 }
-void * AppTask(void* param){
-    TestCase();
-    return NULL;
-}
+
 void Tastcase(void){
     int tid1,tid2,tid3;
     int arg1,arg2,arg3;
