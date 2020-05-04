@@ -44,16 +44,16 @@ int thread_create(thread_t * thread, thread_attr_t *attr, int priority, void *(*
     }
     else if(pCurrentThead->priority < pNewThread->priority){//수낮은게 우선순위높음
         pNewThread->status=THREAD_STATUS_READY;
-        InsertThreadToReadyQueue(pNewThread,pNewThread->priority);//레디큐에 넣는다.
+        InsertThreadToReadyQueue(pNewThread);//레디큐에 넣는다.
         printf("thread create 레디큐에 넣는다 (else if)\n");
     }
     else{//생성된 스레드가 우선순위가 더 높다면 컨텍스트 스위칭
-        InsertThreadToReadyQueue(pCurrentThead,pCurrentThead->priority);//실행중인 스레드를 레디큐로 옮기기
+        //InsertThreadToReadyQueue(pCurrentThead);//실행중인 스레드를 레디큐로 옮기기
         printf("thread create 생성된 스레드가 우선순위가 더 높음 ->컨텍스트 스위칭 (else)\n");
         pCurrentThead->status = THREAD_STATUS_READY;
 
         pNewThread->status=THREAD_STATUS_RUN;
-        DeleteThreadFromReadyQueue(pNewThread);//current 레디큐에서 빼기
+        //DeleteThreadFromReadyQueue(pNewThread);//current 레디큐에서 빼기
         
         __ContextSwitch(pCurrentThead->pid,pNewThread->pid);
     }
@@ -131,7 +131,6 @@ int thread_resume(thread_t tid)
     else{
         
         pCurrentThead->status=THREAD_STATUS_READY;
-        InsertThreadToReadyQueue(pCurrentThead,pCurrentThead->priority);//현재 실행중인 Threadfmf Ready큐로 보내기
 
         targetTCB->status=THREAD_STATUS_RUN;
         //TODO: waiting queue 에 있던 TCB를 꺼내서 지우기 (run상태로 바꿀꺼니까 waiting queue에는 있을 필요가 없음.)
@@ -205,9 +204,10 @@ void print_pThreadEnt(){
 }
 void print_pReadyQueue(){
     printf("-------pReadyQueue----------------\n");
+
     for(int i=0;i<MAX_READYQUEUE_NUM;i++){
         Thread* t = pReadyQueueEnt[i].pHead;
-        for(int j=0;j!=pReadyQueueEnt->queueCount && t;j++){
+        for(int j=0; j < pReadyQueueEnt[i].queueCount;j++){
             printf("%d ",t->pid);
             t = t->phNext;
         }
@@ -222,6 +222,11 @@ void print_pWaitingQueue(){
     for(int i=0;t!=pWaitingQueueTail; t=t->phNext){
         printf("%d ",t->pid);
     }
+    printf("\n------------------------------\n");
+}
+void print_pCurrentThread(){
+    printf("-------pCurrentThread---------------\n");
+    printf("%d",pCurrentThead->pid);
     printf("\n------------------------------\n");
 }
 int find_tid(int pid){

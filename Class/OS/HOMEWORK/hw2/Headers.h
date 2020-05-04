@@ -13,4 +13,5 @@ int find_tid(int pid);
 void print_pWaitingQueue();
 void print_pReadyQueue();
 void print_pThreadEnt();
+void print_pCurrentThread();
 #endif

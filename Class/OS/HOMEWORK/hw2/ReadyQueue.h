@@ -2,7 +2,7 @@
 #define __READY_QUEUE_H__
 #include "Headers.h"
 
-void InsertThreadToReadyQueue(Thread *pObj, int ObjNum);
+void InsertThreadToReadyQueue(Thread *pObj);
 void InsertThreadToHead(Thread *pObj, int objNum);
 Thread *GetThreadByNum(int objnum);
 Thread *GetThreadFromWaitingQueue();

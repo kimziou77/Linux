@@ -9,34 +9,39 @@ BOOL Is_Ready_Queue_Empty(){
 
 int RunScheduler( void )
 {//current 기준
-    printf("RunScheduler\n");
+    
     while(1){
          // keep doing 
+         printf("RunScheduler\n");
         int pr= pCurrentThead->priority;
-    
+   //     printf("@\n");
         if(pReadyQueueEnt[pr].queueCount!=0){ // round robin
-            printf("round - robin\n");
+//            printf("@@\n");
+            //printf("round - robin\n");
             //pReadyQueueEnt[pr].pTail->phNext=pCurrentThead;
             //pReadyQueueEnt[pr].pTail = pCurrentThead;
             pReadyQueueEnt[pr].queueCount++;
             printf("queueCount : %d\n",pReadyQueueEnt[pr].queueCount);
 
-            DeleteThreadFromReadyQueue(pReadyQueueEnt[pr].pHead);
+            
             pReadyQueueEnt[pr].pHead = pReadyQueueEnt[pr].pHead->phNext;
             __ContextSwitch(pCurrentThead,pReadyQueueEnt[pr].pHead);
         }
         else{ // 다음 우선순위 round robin
-            printf("nextPriority round - robin\n");
+            //printf("nextPriority round - robin\n");
             int flag = 1;
             for(int i=0;i<MAX_READYQUEUE_NUM;i++){
+//                pReadyQueueEnt[i].pHead
                 if(pReadyQueueEnt[i].queueCount!=0){
                     flag=0;
                     pReadyQueueEnt[i].pTail->phNext=pCurrentThead;
                     pReadyQueueEnt[i].pTail = pCurrentThead;
                     pReadyQueueEnt[i].queueCount++;
-                    DeleteThreadFromReadyQueue(pReadyQueueEnt[i].pHead);
-                    pReadyQueueEnt[i].pHead = pReadyQueueEnt[i].pHead->phNext;
-                    __ContextSwitch(pCurrentThead,pReadyQueueEnt[pr].pHead);
+                    //pReadyQueueEnt[i].pHead = pReadyQueueEnt[i].pHead->phNext;
+                    
+                    printf("%d\n", pReadyQueueEnt[i].pHead->pid);
+                    printf("%d\n",pCurrentThead->pid);
+                    __ContextSwitch(pCurrentThead->pid,pReadyQueueEnt[i].pHead->pid);
                 }
             }
             //if(flag) break;
@@ -66,15 +71,33 @@ int RunScheduler( void )
 void    __ContextSwitch(int curpid, int newpid){
     //인자를 Tid 라고 가정
     printf("ContextSwtiching %d -> %d \n",curpid,newpid);
+    
+
+    int nn = find_tid(newpid);
+    int cc = find_tid(curpid);
+    Thread * newT = pThreadTbEnt[nn].pThread;
+    Thread * curT = pThreadTbEnt[cc].pThread;
+    //TODO: 근데 얘가 레디에있 는지 웨이트에 있는지 어케알어 ㅇㅅㅇ
+    DeleteThreadFromReadyQueue(newT);
+    InsertThreadToReadyQueue(curT);
+
+    
+    pCurrentThead = pThreadTbEnt[nn].pThread;
+    
     print_pThreadEnt();
-    int nn= find_tid(newpid);
+    print_pWaitingQueue();
+    print_pReadyQueue();
+    print_pCurrentThread();
+
     //printf("@\n");
     kill(newpid, SIGCONT);
     //printf("@@\n");
     kill(curpid, SIGSTOP);
     //printf("@@@\n");
 
-    pCurrentThead = pThreadTbEnt[nn].pThread;
+    
+    
+    
     printf("ContextSwitching Success...Maybe?\n");
     return;
 }
