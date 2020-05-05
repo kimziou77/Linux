@@ -14,7 +14,7 @@ void * AppTask(void* param);
 void signalHandler(int signum);
 void Tastcase(void);
 int find_tid(int pid);
-
+void schedule(int signum);
 void print_pWaitingQueue();
 void print_pReadyQueue();
 void print_pThreadEnt();

@@ -13,6 +13,7 @@ void* Tc1ThreadProc(void* param)
 		sleep(2);
 		printf("Tc1ThreadProc: my thread id (%d), arg is (%d) %d \n", (int)tid, *((int*)param),i);
 		count++;
+		//TODO: 이 카운트는 뭐야 ;;
 	}
 	printf("hello I'm Done My tid is : %d  pid is : %d \n",tid,pThreadTbEnt[tid].pThread->pid);
 	retVal = (int*)param;
@@ -32,10 +33,11 @@ void TestCase1(void)
 	thread_create(&tid[2], NULL, 1, (void*)Tc1ThreadProc,(void*) &i3);	
 	thread_create(&tid[3], NULL, 1, (void*)Tc1ThreadProc,(void*) &i4);	
 	thread_create(&tid[4], NULL, 1, (void*)Tc1ThreadProc,(void*) &i5);
-	
+
+	printf("여기까지는 0번 스레드가 다 점유를 해야 함\n");
 	for(i=0;i<TOTAL_THREAD_NUM;i++)
 	{
-		int* retVal;
+		int* retVal;	
 		thread_join(tid[i],(void **)&retVal);
 		printf("Thread [ %d ] is finish Return : [ %d ] \n",(int)tid[i], -1);
 		//printf("Thread [ %d ] is finish Return : [ %d ] \n",(int)tid[i], *retVal);

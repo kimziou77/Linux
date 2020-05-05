@@ -7,7 +7,6 @@ int main(void) {
     Init();
     thread_create(&tid,NULL,4,AppTask,&arg);
     RunScheduler();//while(1);
-    printf("RunScheduler complete\n");
     
     while(1){}
 }

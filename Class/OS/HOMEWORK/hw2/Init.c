@@ -45,7 +45,7 @@ void Init(void)
 {
     //Create ready queue and waiting queue
     // Initailize thread scheduler
-    if(signal(SIGALRM, signalHandler)==SIG_ERR){
+    if(signal(SIGALRM, schedule)==SIG_ERR){
         perror("signal() error!");
     }
     if(signal(SIGCHLD, signalHandler)==SIG_ERR){
@@ -66,12 +66,27 @@ void Init(void)
     pWaitingQueueHead = NULL;
     pWaitingQueueTail = NULL;
 }
+void schedule(int signum){
+        printf("\n");
+        print_pThreadEnt();
+        print_pWaitingQueue();
+        print_pReadyQueue();
+        print_pCurrentThread();
+        printf("RunScheduler\n");
+        Thread * nThread = GetThreadFromReadyQueue();
+        if(nThread != NULL){//다음 스레드가 있고
+            if(nThread->priority <= pCurrentThread->priority){//우선순위가 높다면
+                //컨텍스트스위칭
+                InsertThreadToReadyQueue(pCurrentThread);
+                DeleteThreadFromReadyQueue(nThread);
+                __ContextSwitch(pCurrentThread->pid,nThread->pid);
+            }
+        }    
+        alarm(TIMESLICE);
+}
 void signalHandler(int signum){
     if(signum==SIGCHLD){
         printf("SIGCHLD @ %d \n",getpid());
-    }
-    else if(signum==SIGALRM){
-        printf("SIGARLM @ ");
     }
     else{
         printf("Handle\n");
@@ -79,5 +94,4 @@ void signalHandler(int signum){
     //시그널 핸들러 안에서 무엇을 해야한다면
     //Priority based Round Robin을 해줘야함.
     //알람이 울리면 RunScheduler 실행해주기?
-    
 }
