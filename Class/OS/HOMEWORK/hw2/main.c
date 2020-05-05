@@ -1,6 +1,7 @@
 #include "Headers.h"
 
 int main(void) {
+    printf("main : %d",getpid());
     thread_t tid;
     int arg;
     Init();
@@ -8,5 +9,5 @@ int main(void) {
     RunScheduler();//while(1);
     printf("RunScheduler complete\n");
     
-    waitpid(tid,NULL);
+    while(1){}
 }

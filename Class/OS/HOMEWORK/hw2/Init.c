@@ -48,6 +48,9 @@ void Init(void)
     if(signal(SIGALRM, signalHandler)==SIG_ERR){
         perror("signal() error!");
     }
+    if(signal(SIGCHLD, signalHandler)==SIG_ERR){
+        perror("signal() error!");
+    }
 
     for(int i=0;i<MAX_THREAD_NUM;i++){//TCB 초기화
         pThreadTbEnt[i].bUsed   = FALSE;
@@ -65,10 +68,10 @@ void Init(void)
 }
 void signalHandler(int signum){
     if(signum==SIGCHLD){
-        printf("SIGCHLD\n");
+        printf("SIGCHLD @ %d \n",getpid());
     }
     else if(signum==SIGALRM){
-        printf("SIGARLM\n");
+        printf("SIGARLM @ ");
     }
     else{
         printf("Handle\n");
