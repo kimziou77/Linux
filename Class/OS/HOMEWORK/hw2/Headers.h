@@ -5,11 +5,14 @@
 #include "Scheduler.h"
 #include "ReadyQueue.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 enum{FALSE=0,TRUE=1};
 void * AppTask(void* param);
+void signalHandler(int signum);
 void Tastcase(void);
 int find_tid(int pid);
+
 void print_pWaitingQueue();
 void print_pReadyQueue();
 void print_pThreadEnt();

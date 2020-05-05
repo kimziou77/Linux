@@ -2,11 +2,15 @@
 #define __READY_QUEUE_H__
 #include "Headers.h"
 
-void InsertThreadToReadyQueue(Thread *pObj);
-void InsertThreadToHead(Thread *pObj, int objNum);
-Thread *GetThreadByNum(int objnum);
-Thread *GetThreadFromWaitingQueue();
-BOOL DeleteThreadFromReadyQueue(Thread *pObj);
-void WaitingQueue_To_ReadyQueue(Thread *pObj);
+void InsertThreadToReadyQueue(Thread *pThread);
+void InsertThreadToWaitingQueue(Thread *pThread);
 
+Thread *GetThreadByNum(int pid);
+
+Thread *GetThreadFromWaitingQueue(int pid);
+Thread * GetThreadFromReadyQueue();
+
+BOOL DeleteThreadFromReadyQueue(Thread *pThread);
+void WaitingQueue_To_ReadyQueue(Thread *pThread);
+void DeleteThreadFromWaitingQueue(Thread *pThread);
 #endif

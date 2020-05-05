@@ -1,10 +1,16 @@
 all: main.out
 
-main.out : Thread.o Scheduler.o main.o ReadyQueue.o Init.o
-	gcc -o main.out main.o Thread.o Scheduler.o ReadyQueue.o Init.o
+main.out : Thread.o Scheduler.o main.o ReadyQueue.o Init.o TestCase1.o TestCase3.o
+	gcc -o main.out main.o Thread.o Scheduler.o ReadyQueue.o Init.o TestCase1.o TestCase3.o
 
-main.o : main.c Headers.h
-	gcc -c -o main.o main.c
+main.o : Tmain.c Headers.h TestCase1.h
+	gcc -c -o main.o Tmain.c
+
+TestCase1.o : TestCase1.c TestCase1.h
+	gcc -c -o TestCase1.o TestCase1.c
+
+TestCase3.o : TestCase3.c TestCase3.h
+	gcc -c -o TestCase3.o TestCase3.c
 
 Init.o : Init.c Headers.h
 	gcc -c -o Init.o Init.c	

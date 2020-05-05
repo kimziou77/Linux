@@ -13,12 +13,14 @@ int FindEmptyThreadTable()
 }
 int thread_create(thread_t * thread, thread_attr_t *attr, int priority, void *(*start_routine) (void *), void *arg)
 {
+    
     char* pStack;
     pStack= malloc(STACK_SIZE);
 
     int flags= SIGCHLD|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_VM;
 
     thread_t pid = clone(start_routine,(char*)pStack+STACK_SIZE,flags,arg); 
+    printf("thread_Create %d\n",pid);
     kill(pid,SIGSTOP);//클론으로 실행된 스래드를 강제정지시킨다.
 
     //TODO:  TCB할당 -> deallocate 위치 확인할것
@@ -34,30 +36,29 @@ int thread_create(thread_t * thread, thread_attr_t *attr, int priority, void *(*
     pThreadTbEnt[*thread].pThread = pNewThread;
 
     
-    printf("새로 생성된 스레드의 우선순위 : %d\n",priority);
+//    printf("새로 생성된 스레드의 우선순위 : %d\n",priority);
 
     //branch..//실행중인 TCB랑 새로 생성된 TCB의 우선순위를 비교한다.
-    if(pCurrentThead == NULL){//현재 실행중인 스레드가 없다면
+    if(pCurrentThread == NULL){//현재 실행중인 스레드가 없다면
         pNewThread->status=THREAD_STATUS_RUN;//바로 실행해준다.
-        pCurrentThead = pNewThread;
-        kill(pCurrentThead->pid,SIGCONT);//중지했던 스레드 다시 실행
+        pCurrentThread = pNewThread;
+        kill(pCurrentThread->pid,SIGCONT);//중지했던 스레드 다시 실행
     }
-    else if(pCurrentThead->priority < pNewThread->priority){//수낮은게 우선순위높음
+    else if(pCurrentThread->priority < pNewThread->priority){//수낮은게 우선순위높음
         pNewThread->status=THREAD_STATUS_READY;
         InsertThreadToReadyQueue(pNewThread);//레디큐에 넣는다.
-        printf("thread create 레디큐에 넣는다 (else if)\n");
+        //printf("thread create 레디큐에 넣는다 (else if)\n");
     }
     else{//생성된 스레드가 우선순위가 더 높다면 컨텍스트 스위칭
         //InsertThreadToReadyQueue(pCurrentThead);//실행중인 스레드를 레디큐로 옮기기
-        printf("thread create 생성된 스레드가 우선순위가 더 높음 ->컨텍스트 스위칭 (else)\n");
-        pCurrentThead->status = THREAD_STATUS_READY;
+        //printf("thread create 생성된 스레드가 우선순위가 더 높음 ->컨텍스트 스위칭 (else)\n");
+        pCurrentThread->status = THREAD_STATUS_READY;
 
         pNewThread->status=THREAD_STATUS_RUN;
         //DeleteThreadFromReadyQueue(pNewThread);//current 레디큐에서 빼기
         
-        __ContextSwitch(pCurrentThead->pid,pNewThread->pid);
+        __ContextSwitch(pCurrentThread->pid,pNewThread->pid);
     }
-
     return thread;
 }
 
@@ -65,7 +66,7 @@ int thread_suspend(thread_t tid)
 // tid 일시정지시키는 함수 wiating queue의 tail로 들어가게 되는데
 // 이미 ready queue 또는 waiting queue 에 들어가 있을 수도 있다.
 {
-    printf("현재 thread : %d\n",thread_self());
+    //printf("현재 thread : %d\n",thread_self());
 
     //자기 자신을 멈추는 동작은 non-precondition
     if(tid<0 || tid >= MAX_THREAD_NUM) return FAILED;//배열 인덱스초과 -> FAILED
@@ -76,10 +77,7 @@ int thread_suspend(thread_t tid)
     int pid = pThreadTbEnt[tid].pThread->pid;
 
     if(status==THREAD_STATUS_RUN){
-        printf("SIGSTOP1\n");
-        kill(pid,SIGSTOP);
-        printf("SIGSTOP2\n");
-        __ContextSwitch(pid,pReadyQueueEnt->pTail->pid);//레디큐 에 마지막애로 CS
+        __ContextSwitch(pid,pReadyQueueEnt[tid].pHead->pid);//레디큐 에 마지막애로 CS
         //Waiting Queue의 Tail에 넣는다.
     }
     else if(status==THREAD_STATUS_READY){
@@ -123,20 +121,20 @@ int thread_resume(thread_t tid)
 
     //깨우는 대상의 priority 에 따라 동작이 달라진다.
     Thread* targetTCB = pThreadTbEnt[tid].pThread;//TCB로부터 우선순위를 받아온다.
-    if(pCurrentThead->priority < targetTCB->priority){
+    if(pCurrentThread->priority < targetTCB->priority){
         //우선순위 작으면 ready queue로 보낸다.
         targetTCB->status=THREAD_STATUS_READY;
         WaitingQueue_To_ReadyQueue(targetTCB);//waiting -> readyQueue
     }
     else{
         
-        pCurrentThead->status=THREAD_STATUS_READY;
+        pCurrentThread->status=THREAD_STATUS_READY;
 
         targetTCB->status=THREAD_STATUS_RUN;
         //TODO: waiting queue 에 있던 TCB를 꺼내서 지우기 (run상태로 바꿀꺼니까 waiting queue에는 있을 필요가 없음.)
 
-        pCurrentThead=targetTCB;
-        __ContextSwitch(pCurrentThead,targetTCB);//TODO: 이 순서가 맞는지도 확인할것
+        pCurrentThread=targetTCB;
+        __ContextSwitch(pCurrentThread->pid,targetTCB->pid);//TODO: 이 순서가 맞는지도 확인할것
 
     }
     return SUCCESS;
@@ -146,12 +144,8 @@ thread_t thread_self()
 {
     int pid= getpid();
     printf("Thread Self : %d \n",pid);
-
-    
-
-    for(int i=0;i<MAX_THREAD_NUM;i++){
+    for(int i=0;i < MAX_THREAD_NUM;i++){
         if(pThreadTbEnt[i].pThread->pid==pid){
-            //printf("현재 스레드 아이디는 : %d\n",i);
             return i;// thread ID
         }            
     }
@@ -159,9 +153,19 @@ thread_t thread_self()
 }
 
 int thread_join(thread_t tid, void ** retval){
-    //child의 TCB랑 child의 thread status를 가지고 온다.
+    printf("thread_join\n");
+    Thread * pThread = pThreadTbEnt[tid].pThread;
 
-    //이때 join을 하기 앞서, child가 먼저 종료되었을 수 있다. 이 경우를 확인하기 위해 Child가 좀비인지를 확인하자
+    if(pThread->status!=THREAD_STATUS_ZOMBIE){//아직 child가 종료되지 않았을 때
+        pThreadTbEnt[tid].pThread->status = THREAD_STATUS_WAIT;//child를 기다리게 된다.
+        Thread * nThread = GetThreadFromReadyQueue();
+        __ContextSwitch(pCurrentThread->pid, nThread->pid);
+        pause();
+
+    }
+    else{//child가 이미 정상종료되었을 때
+
+    }
     /*
         if child != 좀비
         {
@@ -193,22 +197,38 @@ int thread_join(thread_t tid, void ** retval){
    
 }
 int thread_exit(void * retval){
+    printf("exit\n");
+     int t = find_tid(pCurrentThread->pid);
+     Thread * pThread = pThreadTbEnt[t].pThread;
+     pThread->exitCode = (int*)retval;
+     pThread->status = THREAD_STATUS_ZOMBIE;
+    //TODO: signal보내기
+    //waiting queue에서 새거 하나 꺼내오기
+    Thread * nThread = GetThreadFromReadyQueue();
+    //printf("exit and context : %d \n",nThread->pid);
     
+    //InsertThreadToWaitingQueue(pCurrentThread);
+    //pCurrentThread;
+    __ContextSwitch(pThread->pid,nThread->pid);
+
+     //exit(pCurrentThread->pid);
 }
 void print_pThreadEnt(){
     printf("-------pThreadEnt----------------\n");
     for(int i=0;i<MAX_THREAD_NUM && pThreadTbEnt[i].bUsed ;i++){
-        printf("%d ",pThreadTbEnt[i].pThread->pid);
+        printf("%d(%d) ",pThreadTbEnt[i].pThread->pid,pThreadTbEnt[i].pThread->priority);
     }
     printf("\n------------------------------\n");
 }
 void print_pReadyQueue(){
     printf("-------pReadyQueue----------------\n");
-
     for(int i=0;i<MAX_READYQUEUE_NUM;i++){
+        //printf("%d ",i);
+        if(pReadyQueueEnt[i].queueCount==0) continue;
         Thread* t = pReadyQueueEnt[i].pHead;
+        if(t == NULL) continue;
         for(int j=0; j < pReadyQueueEnt[i].queueCount;j++){
-            printf("%d ",t->pid);
+            printf("%d(%d) ",t->pid,t->priority);
             t = t->phNext;
         }
     }
@@ -226,7 +246,7 @@ void print_pWaitingQueue(){
 }
 void print_pCurrentThread(){
     printf("-------pCurrentThread---------------\n");
-    printf("%d",pCurrentThead->pid);
+    printf("%d(%d)",pCurrentThread->pid,pCurrentThread->priority);
     printf("\n------------------------------\n");
 }
 int find_tid(int pid){

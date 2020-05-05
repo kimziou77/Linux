@@ -1,5 +1,4 @@
 #include "Headers.h"
-void alrmHandler(int signum);
 
 void * foo1(void* arg){
     printf("Hello I'm foo1\n");
@@ -32,7 +31,6 @@ void TestCase(void){
     thread_suspend(tid3);
     thread_suspend(tid2);
     
-    printf("......resume....%d\n",tid1);
     thread_resume(tid1);
     
     while(1);
@@ -47,7 +45,7 @@ void Init(void)
 {
     //Create ready queue and waiting queue
     // Initailize thread scheduler
-    if(signal(SIGALRM, alrmHandler)==SIG_ERR){
+    if(signal(SIGALRM, signalHandler)==SIG_ERR){
         perror("signal() error!");
     }
 
@@ -59,14 +57,24 @@ void Init(void)
 	for (int i = 0; i < MAX_READYQUEUE_NUM; i++) { //ReadyQueue초기화
 		pReadyQueueEnt[i].pHead = NULL;
 		pReadyQueueEnt[i].pTail = NULL;
+        pReadyQueueEnt[i].queueCount=0;
 	}
     //Waiting queue 초기화
     pWaitingQueueHead = NULL;
     pWaitingQueueTail = NULL;
 }
-void alrmHandler(int signum){
+void signalHandler(int signum){
+    if(signum==SIGCHLD){
+        printf("SIGCHLD\n");
+    }
+    else if(signum==SIGALRM){
+        printf("SIGARLM\n");
+    }
+    else{
+        printf("Handle\n");
+    }
     //시그널 핸들러 안에서 무엇을 해야한다면
     //Priority based Round Robin을 해줘야함.
     //알람이 울리면 RunScheduler 실행해주기?
-    printf("alrmHandle\n");
+    
 }
