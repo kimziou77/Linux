@@ -22,9 +22,6 @@ int RunScheduler( void )
         else{ // 다음 우선순위 round robin
             for(int i=0;i<MAX_READYQUEUE_NUM;i++){
                 if(pReadyQueueEnt[i].queueCount!=0){
-                    pReadyQueueEnt[i].pTail->phNext=pCurrentThread;
-                    pReadyQueueEnt[i].pTail = pCurrentThread;
-                    
                     __ContextSwitch(pCurrentThread->pid,pReadyQueueEnt[i].pHead->pid);
                 }
             }

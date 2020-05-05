@@ -2,34 +2,37 @@
 
 //TODO: 인자들을 통일시켜줄 수 없나?
 void InsertThreadToReadyQueue(Thread *pThread){
+	
 	int priority = pThread->priority;
     //printf("현재 실행중인 스레드의 우선순위 : %d\n",priority);
 	
     //Thread -> Ready Tail로 넣어줘야함
-    printf("InsertThreadToReadyQueue %d\n",pThread->pid);
+    printf("InsertThreadToReadyQueue %d priority : %d \n",pThread->pid,pThread->priority);
+	
     int tid = find_tid(pThread->pid);
-    if (pReadyQueueEnt[priority].pHead == NULL) {
+    if (pReadyQueueEnt[priority].pHead == NULL) {//암것도 없었을 때 그냥넣어준다.
+		printf("@");
 		pReadyQueueEnt[priority].pHead = pThread;
 		pReadyQueueEnt[priority].pTail = pThread;
 
 		pReadyQueueEnt[priority].queueCount = 1;
 	}
 	else {
+		printf("@@");
+		//printf(" tail %d  tail->next %d \n",pReadyQueueEnt[priority].pTail->pid, pReadyQueueEnt[priority].pTail->phNext->pid);
+
 		pReadyQueueEnt[priority].pTail->phNext = pThread;
 		pThread->phPrev = pReadyQueueEnt[priority].pTail;
 		pReadyQueueEnt[priority].pTail = pThread;
 		pReadyQueueEnt[priority].queueCount++;
 	}
-	printf("%d(%d)\n", pReadyQueueEnt[priority].queueCount,priority);
+	printf("%d(%d) ", pReadyQueueEnt[priority].queueCount,priority);
 	Thread * tmp = pReadyQueueEnt[priority].pHead;
 	for(int i=0;i<pReadyQueueEnt[priority].queueCount;i++){
-		if(tmp==NULL){
-			printf("fin \n");
-			break;
-		}
 		printf("%d(%d)->",tmp->pid,tmp->priority);
 		tmp= tmp->phNext;
 	}
+	printf("\n");
 	// print_pThreadEnt();
 	// print_pReadyQueue();
 	
@@ -98,7 +101,7 @@ Thread * GetThreadFromReadyQueue(){
 BOOL DeleteThreadFromReadyQueue(Thread *pThread){
     //Waiting Queue로부터 Thread를 Delete 해준다.
     //아닌데 이거 주석 바꿔야 하는데 저것도 만들어줘야됨
-    printf("DeleteThreadFromReadyQueue %d \n",pThread->pid);
+    printf("DeleteThreadFromReadyQueue %d ",pThread->pid);
 
 	//no Object -> false;
 	if (pThread == NULL) return FALSE;
@@ -108,19 +111,19 @@ BOOL DeleteThreadFromReadyQueue(Thread *pThread){
     int pr=pThread->priority;
 	//printf("헤드에 들어있는건 무엇일까요 : %d \n\n",pReadyQueueEnt[pr].pHead->pid);
 	if (pReadyQueueEnt[pr].pHead == pThread){ // 1. 헤드쪽에 위치
-		printf("head Delete ");
+		printf(" (head Delete ");
 		if (pReadyQueueEnt[pr].queueCount== 1) { // 헤드쪽에 삭제하려는것 하나만 존재
-			printf("1\n");
+			printf("1)\n");
 			pReadyQueueEnt[pr].pHead = NULL;
 		}
 		else{
-			printf("2\n");
+			printf("2)\n");
 			pReadyQueueEnt[pr].pHead = pThread->phNext;
 			pReadyQueueEnt[pr].pHead -> phPrev = NULL;
 		}
 	}
 	else if (pReadyQueueEnt[pr].pTail == pThread) { // 2. 테일쪽에 위치
-		printf("Tail Delete\n");
+		printf(" (Tail Delete)\n");
 		if (pReadyQueueEnt[pr].queueCount== 1) { // 테일쪽에 삭제하려는것 하나만 존재
 			pReadyQueueEnt[pr].pTail = NULL;
 		}
@@ -130,7 +133,7 @@ BOOL DeleteThreadFromReadyQueue(Thread *pThread){
 		}
 	}
 	else {									// 3. 중앙에 위치
-		printf("Middle Delete\n");
+		printf("(Middle Delete)\n");
 		Thread* target = pThread;
 		Thread* prev = target->phPrev;
 		Thread* next = target->phNext;

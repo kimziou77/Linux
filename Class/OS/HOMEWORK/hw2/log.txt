@@ -1,0 +1,491 @@
+thread_Create 7647
+RunScheduler
+thread_Create 7648
+InsertThreadToReadyQueue 7648
+1(1)
+7648(1)->thread_Create 7649
+InsertThreadToReadyQueue 7649
+2(1)
+7648(1)->7649(1)->thread_Create 7650
+InsertThreadToReadyQueue 7650
+3(1)
+7648(1)->7649(1)->7650(1)->thread_Create 7651
+InsertThreadToReadyQueue 7651
+1(2)
+7651(2)->thread_Create 7652
+InsertThreadToReadyQueue 7652
+2(2)
+7651(2)->7652(2)->thread_Create 7653
+InsertThreadToReadyQueue 7653
+3(2)
+7651(2)->7652(2)->7653(2)->thread_Create 7654
+InsertThreadToReadyQueue 7654
+1(3)
+7654(3)->thread_Create 7655
+InsertThreadToReadyQueue 7655
+2(3)
+7654(3)->7655(3)->thread_Create 7656
+InsertThreadToReadyQueue 7656
+3(3)
+7654(3)->7655(3)->7656(3)->thread_join
+ContextSwtiching 7647 -> 7648 
+DeleteThreadFromReadyQueue 7648 
+head Delete 2
+InsertThreadToReadyQueue 7647
+1(0)
+7647(0)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7648(1)
+------------------------------
+
+
+Thread Self : 7648 
+SIGARLM
+RunScheduler
+ContextSwtiching 7648 -> 7649 
+DeleteThreadFromReadyQueue 7649 
+head Delete 2
+InsertThreadToReadyQueue 7648
+2(1)
+7650(1)->7648(1)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7650(1) 7648(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7649(1)
+------------------------------
+
+
+ContextSwitching Success...
+Thread Self : 7649 
+SIGARLM
+RunScheduler
+ContextSwtiching 7649 -> 7650 
+DeleteThreadFromReadyQueue 7650 
+head Delete 2
+InsertThreadToReadyQueue 7649
+2(1)
+7648(1)->7649(1)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7648(1) 7649(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7650(1)
+------------------------------
+
+
+ContextSwitching Success...
+Thread Self : 7650 
+SIGARLM
+RunScheduler
+ContextSwtiching 7650 -> 7648 
+DeleteThreadFromReadyQueue 7648 
+head Delete 2
+InsertThreadToReadyQueue 7650
+2(1)
+7649(1)->7650(1)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7648(1)
+------------------------------
+
+
+ContextSwitching Success...
+Tc1ThreadProc: my thread id (1), arg is (0)
+SIGARLM
+RunScheduler
+ContextSwtiching 7648 -> 7649 
+DeleteThreadFromReadyQueue 7649 
+head Delete 2
+InsertThreadToReadyQueue 7648
+2(1)
+7650(1)->7648(1)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7650(1) 7648(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7649(1)
+------------------------------
+
+
+ContextSwitching Success...
+Tc1ThreadProc: my thread id (2), arg is (1)
+SIGARLM
+RunScheduler
+ContextSwtiching 7649 -> 7650 
+DeleteThreadFromReadyQueue 7650 
+head Delete 2
+InsertThreadToReadyQueue 7649
+2(1)
+7648(1)->7649(1)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7648(1) 7649(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7650(1)
+------------------------------
+
+
+ContextSwitching Success...
+Tc1ThreadProc: my thread id (3), arg is (2)
+SIGARLM
+RunScheduler
+ContextSwtiching 7650 -> 7648 
+DeleteThreadFromReadyQueue 7648 
+head Delete 2
+InsertThreadToReadyQueue 7650
+2(1)
+7649(1)->7650(1)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7648(1)
+------------------------------
+
+
+ContextSwitching Success...
+Tc1ThreadProc: my thread id (1), arg is (0)
+SIGARLM
+RunScheduler
+ContextSwtiching 7648 -> 7649 
+DeleteThreadFromReadyQueue 7649 
+head Delete 2
+InsertThreadToReadyQueue 7648
+2(1)
+7650(1)->7648(1)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7650(1) 7648(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7649(1)
+------------------------------
+
+
+ContextSwitching Success...
+Tc1ThreadProc: my thread id (2), arg is (1)
+SIGARLM
+RunScheduler
+ContextSwtiching 7649 -> 7650 
+DeleteThreadFromReadyQueue 7650 
+head Delete 2
+InsertThreadToReadyQueue 7649
+2(1)
+7648(1)->7649(1)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7648(1) 7649(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7650(1)
+------------------------------
+
+
+ContextSwitching Success...
+Tc1ThreadProc: my thread id (3), arg is (2)
+SIGARLM
+RunScheduler
+ContextSwtiching 7650 -> 7648 
+DeleteThreadFromReadyQueue 7648 
+head Delete 2
+InsertThreadToReadyQueue 7650
+2(1)
+7649(1)->7650(1)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7648(1)
+------------------------------
+
+
+ContextSwitching Success...
+Tc1ThreadProc: my thread id (1), arg is (0)
+SIGARLM
+RunScheduler
+ContextSwtiching 7648 -> 7649 
+DeleteThreadFromReadyQueue 7649 
+head Delete 2
+InsertThreadToReadyQueue 7648
+2(1)
+7650(1)->7648(1)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7650(1) 7648(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7649(1)
+------------------------------
+
+
+ContextSwitching Success...
+Tc1ThreadProc: my thread id (2), arg is (1)
+SIGARLM
+RunScheduler
+ContextSwtiching 7649 -> 7650 
+DeleteThreadFromReadyQueue 7650 
+head Delete 2
+InsertThreadToReadyQueue 7649
+2(1)
+7648(1)->7649(1)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7648(1) 7649(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7650(1)
+------------------------------
+
+
+ContextSwitching Success...
+Tc1ThreadProc: my thread id (3), arg is (2)
+SIGARLM
+RunScheduler
+ContextSwtiching 7650 -> 7648 
+DeleteThreadFromReadyQueue 7648 
+head Delete 2
+InsertThreadToReadyQueue 7650
+2(1)
+7649(1)->7650(1)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7648(1)
+------------------------------
+
+
+ContextSwitching Success...
+Tc1ThreadProc: my thread id (1), arg is (0)
+SIGARLM
+RunScheduler
+ContextSwtiching 7648 -> 7649 
+DeleteThreadFromReadyQueue 7649 
+head Delete 2
+InsertThreadToReadyQueue 7648
+2(1)
+7650(1)->7648(1)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7650(1) 7648(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7649(1)
+------------------------------
+
+
+ContextSwitching Success...
+Tc1ThreadProc: my thread id (2), arg is (1)
+Tc1ThreadProc: my thread id (2), arg is (1)
+exit
+ContextSwtiching 7649 -> 7647 
+DeleteThreadFromReadyQueue 7647 
+head Delete 1
+InsertThreadToReadyQueue 7649
+3(1)
+7650(1)->7648(1)->7649(1)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7650(1) 7648(1) 7649(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7647(0)
+------------------------------
+
+
+ContextSwitching Success...
+SIGARLM
+RunScheduler
+ContextSwtiching 7647 -> 7650 
+DeleteThreadFromReadyQueue 7650 
+head Delete 2
+InsertThreadToReadyQueue 7647
+1(0)
+7647(0)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7648(1) 7649(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7650(1)
+------------------------------
+
+
+Tc1ThreadProc: my thread id (3), arg is (2)
+ContextSwitching Success...
+ContextSwtiching 7650 -> 7651 
+DeleteThreadFromReadyQueue 7651 
+head Delete 2
+InsertThreadToReadyQueue 7650
+3(1)
+7648(1)->7649(1)->7647(0)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7648(1) 7649(1) 7647(0) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7651(2)
+------------------------------
+
+
+ContextSwitching Success...
+ContextSwtiching 7651 -> 7654 
+DeleteThreadFromReadyQueue 7654 
+head Delete 2
+InsertThreadToReadyQueue 7651
+3(2)
+7652(2)->7653(2)->7650(1)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7648(1) 7649(1) 7647(0) 7652(2) 7653(2) 7650(1) 7655(3) 7656(3) 
+------------------------------
+-------pCurrentThread---------------
+7654(3)
+------------------------------
+
+
+Thread Self : 7654 
+Thread Self : 7651 
+ContextSwitching Success...
+Tc1ThreadProc: my thread id (7), arg is (6)
+SIGARLM
+RunScheduler
+ContextSwtiching 7654 -> 7655 
+DeleteThreadFromReadyQueue 7655 
+head Delete 2
+InsertThreadToReadyQueue 7654
+2(3)
+7656(3)->7651(2)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7648(1) 7649(1) 7647(0) 7652(2) 7653(2) 7650(1) 7656(3) 7651(2) 
+------------------------------
+-------pCurrentThread---------------
+7655(3)
+------------------------------
+
+
+Thread Self : 7655 
+ContextSwitching Success...
+Tc1ThreadProc: my thread id (8), arg is (7)
+SIGARLM
+RunScheduler
+ContextSwtiching 7655 -> 7656 
+DeleteThreadFromReadyQueue 7656 
+head Delete 2
+InsertThreadToReadyQueue 7655
+2(3)
+7651(2)->7654(3)->-------pThreadEnt----------------
+7647(0) 7648(1) 7649(1) 7650(1) 7651(2) 7652(2) 7653(2) 7654(3) 7655(3) 7656(3) 
+------------------------------
+-------pWaitingQueue---------------
+
+------------------------------
+-------pReadyQueue----------------
+7647(0) 7648(1) 7649(1) 7647(0) 7652(2) 7653(2) 7650(1) 7651(2) 7654(3) 
+------------------------------
+-------pCurrentThread---------------
+7656(3)
+------------------------------
+
+
+Thread Self : 7656 
+ContextSwitching Success...
+Tc1ThreadProc: my thread id (9), arg is (8)
+SIGARLM
+RunScheduler
+ContextSwtiching 7656 -> 7651 
+DeleteThreadFromReadyQueue 7651 
+Tail Delete
+세그멘테이션 오류 (core dumped)
