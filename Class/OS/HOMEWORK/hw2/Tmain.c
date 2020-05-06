@@ -5,7 +5,7 @@
 
 
 int main(int argc, char* argv[]){
-
+	printf("Start! My Pid is : %d\n",getpid());
 	int TcNum;
 	thread_t tid1, tid2, tid3, tid4, tid5;
 
@@ -17,11 +17,11 @@ int main(int argc, char* argv[]){
 	Init();
 
 	TcNum=atoi(argv[1]);
-
+	int pid;
 	switch(TcNum)
 	{
 		case 1:
-			thread_create(&tid1,NULL,0,(void*)TestCase1,0);
+			pid = thread_create(&tid1,NULL,0,(void*)TestCase1,0);
 			break;
 
 		case 2:
@@ -31,7 +31,7 @@ int main(int argc, char* argv[]){
 			thread_create(&tid3,NULL,0,(void*)TestCase3,0);
 			break;
 	}
-
+	
 	RunScheduler();
 
 	while(1){}

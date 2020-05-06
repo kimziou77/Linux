@@ -13,4 +13,5 @@ Thread * GetThreadFromReadyQueue();
 BOOL DeleteThreadFromReadyQueue(Thread *pThread);
 void WaitingQueue_To_ReadyQueue(Thread *pThread);
 void DeleteThreadFromWaitingQueue(Thread *pThread);
+BOOL IsReadyQueueEmpty();
 #endif

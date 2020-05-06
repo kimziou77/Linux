@@ -7,13 +7,12 @@ void InsertThreadToReadyQueue(Thread *pThread){
     //printf("현재 실행중인 스레드의 우선순위 : %d\n",priority);
 	
     //Thread -> Ready Tail로 넣어줘야함
-    printf("InsertThreadToReadyQueue %d (%d)\n",pThread->pid,pThread->priority);
+    // printf("InsertThreadToReadyQueue %d (%d)\n",pThread->pid,pThread->priority);
 	
     int tid = find_tid(pThread->pid);
 	pThread->status = THREAD_STATUS_READY;
 
     if (pReadyQueueEnt[priority].pHead == NULL) {//암것도 없었을 때 그냥넣어준다.
-		printf("Ready head null \n");
 		pReadyQueueEnt[priority].pHead = pThread;
 		pReadyQueueEnt[priority].pTail = pThread;
 
@@ -50,7 +49,7 @@ Thread *GetThreadByPid(int pid){//tid 아니고 pid로 가정
 }
 
 Thread *GetThreadFromWaitingQueue(int pid){
-	printf("Get Thread From Waiting Queue \n");
+	// printf("Get Thread From Waiting Queue \n");
 	//waiting queue로부터는 waiting이 끝난 애들을 데리고 와야한다.
     if(pWaitingQueueHead == NULL) return NULL;
     int tid = find_tid(pid);
@@ -93,7 +92,7 @@ Thread * GetThreadFromReadyQueue(){
 BOOL DeleteThreadFromReadyQueue(Thread *pThread){
     //Waiting Queue로부터 Thread를 Delete 해준다.
     //아닌데 이거 주석 바꿔야 하는데 저것도 만들어줘야됨
-    printf("DeleteThreadFromReadyQueue %d(%d)\n",pThread->pid,pThread->priority);
+    // printf("DeleteThreadFromReadyQueue %d(%d)\n",pThread->pid,pThread->priority);
 
 	//no Object -> false;
 	if (pThread == NULL) return FALSE;
@@ -147,9 +146,9 @@ void WaitingQueue_To_ReadyQueue(Thread * pThread){
 }
 void InsertThreadToWaitingQueue(Thread *pThread){
 	//wating queue의 tail로 넣는 함수
-	printf("Insert Thread To WaitingQueue %d(%d)\n ",pThread->pid,pThread->priority);
-    int tid = find_tid(pThread->pid);
-
+	// printf("Insert Thread To WaitingQueue %d(%d)\n ",pThread->pid,pThread->priority);
+    thread_t tid = find_tid(pThread->pid);
+	
     if (pWaitingQueueHead == NULL) {//head insert
 		//printf("insertWaiting @\n");
 		pWaitingQueueHead = pThread;
@@ -165,7 +164,16 @@ void InsertThreadToWaitingQueue(Thread *pThread){
 	pThread->status = THREAD_STATUS_WAIT;
 }
 void DeleteThreadFromWaitingQueue(Thread *pThread){//사실 이건 필요가 없는데.. 
-	printf("Delete Thread From Waiting Queue : %d \n",pThread->pid);
+	// printf("Delete Thread From Waiting Queue : %d \n",pThread->pid);
 	GetThreadFromWaitingQueue(pThread->pid);
+}
+BOOL IsReadyQueueEmpty(){
+	
+	for(int i=0;i<MAX_READYQUEUE_NUM;i++){
+		if(pReadyQueueEnt[i].pHead != NULL)
+			return FALSE;
+	}
+	
+	return TRUE;
 }
 //delete From Waiting queue함수 만들기

@@ -12,12 +12,15 @@ enum{FAILED = -1, SUCCESS = 0};
 
 void * AppTask(void* param);
 void signalHandler(int signum);
+void wakeUp(int signum);
+
 void Tastcase(void);
-int find_tid(int pid);
+thread_t find_tid(int pid);
 void schedule(int signum);
 void print_pWaitingQueue();
 void print_pReadyQueue();
 void print_pThreadEnt();
 void print_pCurrentThread();
+
 int FindEmptyThreadTable();
 #endif
