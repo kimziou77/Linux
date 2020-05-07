@@ -6,10 +6,9 @@
 #include "ReadyQueue.h"
 #include <stdio.h>
 #include <stdlib.h>
-
 enum{FALSE = 0, TRUE = 1};
 enum{FAILED = -1, SUCCESS = 0};
-
+int mainPid;
 void * AppTask(void* param);
 void signalHandler(int signum);
 void wakeUp(int signum);

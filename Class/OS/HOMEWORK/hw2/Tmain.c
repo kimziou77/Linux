@@ -5,7 +5,8 @@
 
 
 int main(int argc, char* argv[]){
-	printf("Start! My Pid is : %d\n",getpid());
+	mainPid = getpid();
+	printf("Start! My Pid is : %d\n",mainPid);
 	int TcNum;
 	thread_t tid1, tid2, tid3, tid4, tid5;
 

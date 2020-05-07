@@ -79,25 +79,25 @@ Thread *GetThreadFromWaitingQueue(int pid){
 }
 Thread * GetThreadFromReadyQueue(){
 	//현재 가장 우선순위가 높은것의 주소를 넘겨준다. **연결은 되어있음
-	//printf("Get Thread From Readys Queue \n");
+	// printf("Get Thread From Readys Queue \n");
 
 	for(int i=0;i<MAX_READYQUEUE_NUM;i++){
 		if(pReadyQueueEnt[i].pHead != NULL)
 			return pReadyQueueEnt[i].pHead;
 	}
-	
 	return NULL;
 
 }
 BOOL DeleteThreadFromReadyQueue(Thread *pThread){
-    //Waiting Queue로부터 Thread를 Delete 해준다.
-    //아닌데 이거 주석 바꿔야 하는데 저것도 만들어줘야됨
+    //ReadyQueue로부터 Thread를 Delete 해준다.
+
     // printf("DeleteThreadFromReadyQueue %d(%d)\n",pThread->pid,pThread->priority);
 
 	//no Object -> false;
 	if (pThread == NULL) return FALSE;
     //이미 레디큐에 없으면 삭제할 필요가 없지
     if(GetThreadByPid(pThread->pid)==NULL) return FALSE;
+
     int pr=pThread->priority;
 	//printf("헤드에 들어있는건 무엇일까요 : %d \n\n",pReadyQueueEnt[pr].pHead->pid);
 	if (pReadyQueueEnt[pr].pHead == pThread){ // 1. 헤드쪽에 위치
@@ -150,17 +150,17 @@ void InsertThreadToWaitingQueue(Thread *pThread){
     thread_t tid = find_tid(pThread->pid);
 	
     if (pWaitingQueueHead == NULL) {//head insert
-		//printf("insertWaiting @\n");
+		// printf("insertWaiting @\n");
 		pWaitingQueueHead = pThread;
 		pWaitingQueueTail = pThread;
 	}
 	else {//tail insert
-		//printf("insertWaiting @@\n");
+		// printf("insertWaiting @@\n");
 		pWaitingQueueTail->phNext = pThread;
 		pThread->phPrev = pWaitingQueueTail;
 		pWaitingQueueTail= pThread;
 	}
-	//printf("insertWaiting @@@@\n");
+	// printf("insertWaiting @@@@\n");
 	pThread->status = THREAD_STATUS_WAIT;
 }
 void DeleteThreadFromWaitingQueue(Thread *pThread){//사실 이건 필요가 없는데.. 

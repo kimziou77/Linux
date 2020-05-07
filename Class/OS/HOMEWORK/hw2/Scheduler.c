@@ -2,13 +2,17 @@
 
 int RunScheduler( void )
 {
-    printf("RunScheduler\n");
-    alarm(0);
+    printf("RunScheduler %d\n",getpid());
     alarm(TIMESLICE);
+    //printf("%d 의 TIMESLICE 재정의\n",getpid());
 }
 
 void    __ContextSwitch(int curpid, int newpid){//인자를 pid 라고 가정
-    printf(" %d -> %d \n",curpid,newpid);
+    // alarm(0);
+    // printf("get %d /// ",getpid());
+    
+    //kill(getpid(),SIGUSR2);
+    printf("%d -> %d \n",curpid,newpid);
     
     int nn = find_tid(newpid);
     int cc = find_tid(curpid);
@@ -18,10 +22,14 @@ void    __ContextSwitch(int curpid, int newpid){//인자를 pid 라고 가정
     newT->status = THREAD_STATUS_RUN;
 
     printf("ContextSwitching Success...\n");
-    kill(curpid, SIGSTOP);
+        print_pThreadEnt();
+        print_pWaitingQueue();
+        print_pReadyQueue();
+        print_pCurrentThread();
+        printf(">>>>>>>>>>>>>>>>%d>>>>>>>>>>>>>>>>>>>\n\n",getpid());
     kill(newpid, SIGCONT);
-    //이 함수를 실행하는 parent는 항상 main의 RunScheduler이어야 함
-    //그래야 curpid를 스탑해도 Context Switching Success가 출력될것임
-    
+    kill(mainPid,SIGUSR2);
+    if(curT->status!=THREAD_STATUS_ZOMBIE || curT->status !=THREAD_STATUS_WAIT)
+        kill(curpid, SIGSTOP);
     return;
 }

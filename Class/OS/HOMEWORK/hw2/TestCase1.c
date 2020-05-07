@@ -39,6 +39,7 @@ void TestCase1(void)
 	for(i=0;i<TOTAL_THREAD_NUM;i++)
 	{
 		int* retVal;	
+		//alarm(0);
 		thread_join(tid[i],(void **)&retVal);
 		printf("Thread [ %d ] is finish Return : [ %d ] \n",(int)tid[i], *retVal);
 	}

@@ -150,59 +150,56 @@ thread_t thread_self()//tid 반환한다
     printf("NONE ID \n");
 }
 void wakeUp(int signum){
-    if(signum==SIGUSR1){
-        printf("SIGCHLD wake up @ %d \n",getpid());
+    printf("wake up @ %d \n",getpid());
 
-        print_pThreadEnt();
-        print_pWaitingQueue();
-        print_pReadyQueue();
-        print_pCurrentThread();
+    print_pThreadEnt();
+    print_pWaitingQueue();
+    print_pReadyQueue();
+    print_pCurrentThread();
 
-        //thread_t tid = thread_self();TODO: 이게 지금 부모스레드가 ..
-        Thread * prtThread = pThreadTbEnt[0].pThread;
-        printf("prtTHread : %d\n",prtThread->pid);
+    //thread_t tid = thread_self();TODO: 이게 지금 부모스레드가 ..
+    Thread * prtThread = pThreadTbEnt[0].pThread;
+    printf("prtTHread : %d\n",prtThread->pid);
 
-        DeleteThreadFromWaitingQueue(prtThread); //Waiting Queue에서 제거
-        //Set Status
-        if(prtThread->priority < pCurrentThread->priority){ // Running
-            InsertThreadToReadyQueue(pCurrentThread);
-            pCurrentThread->status = THREAD_STATUS_READY;
-            //Thread * schedulerThread = pThreadTbEnt[0].pThread;
-            printf("%d , %d \n",prtThread->pid, pCurrentThread->pid);
-            printf("thead join contextSwitch ");
-            //kill(schedulerThread->pid,SIGALRM);
-            __ContextSwitch(prtThread->pid, pCurrentThread->pid);
-        }
-        else{ // Ready
-            prtThread->status = THREAD_STATUS_READY;//Set thread status to ready
-            InsertThreadToReadyQueue(prtThread);//move this thread's TCB into ready queue
-        }
+    DeleteThreadFromWaitingQueue(prtThread); //Waiting Queue에서 제거
+    //Set Status
+    if(prtThread->priority < pCurrentThread->priority){ // Running
+        InsertThreadToReadyQueue(pCurrentThread);
+        pCurrentThread->status = THREAD_STATUS_READY;
+        //Thread * schedulerThread = pThreadTbEnt[0].pThread;
+        printf("%d , %d \n",prtThread->pid, pCurrentThread->pid);
+        // printf("thead join contextSwitch ");
+        //kill(schedulerThread->pid,SIGALRM);
+        __ContextSwitch(prtThread->pid, pCurrentThread->pid);
     }
-    else{
-        printf("SIGNAL ERROR\n");
+    else{ // Ready
+        prtThread->status = THREAD_STATUS_READY;//Set thread status to ready
+        InsertThreadToReadyQueue(prtThread);//move this thread's TCB into ready queue
     }
     //시그널 핸들러 안에서 무엇을 해야한다면
     //Priority based Round Robin을 해줘야함.
     //알람이 울리면 RunScheduler 실행해주기?
 }
+
 int thread_join(thread_t tid, void * * retval){
-    
+    if(signal(SIGUSR2, RunScheduler)==SIG_ERR){
+        perror("signal() error!");
+    }
     printf("thread_join child : %d를 기다릴거임 \n",pThreadTbEnt[tid].pThread->pid);
-    thread_t pTid = thread_self();//부모 tid
-    int pPid = pThreadTbEnt[pTid].pThread->pid;//부모 pid
-    
+    thread_t pTid = thread_self();//TastCase 프로세스(부모)
+    int pPid = pThreadTbEnt[pTid].pThread->pid;//TastCase 프로세스
     Thread * prtThread = pThreadTbEnt[pTid].pThread;//부모 스레드
     Thread * chdThread = pThreadTbEnt[tid].pThread;//자식 스레드
-    
-    if(chdThread->status!=THREAD_STATUS_ZOMBIE){//Child status is ZOMBIE?
+    if(chdThread->status != THREAD_STATUS_ZOMBIE){//Child status is ZOMBIE?
         prtThread->status = THREAD_STATUS_WAIT;//Set this(Parent) Thread status to waiting
         InsertThreadToWaitingQueue(prtThread);//move this Thread's TCB to waiting queue
-
         Thread * nThread = GetThreadFromReadyQueue();//Select new Thread to run on CPU(scheduler);
-        DeleteThreadFromReadyQueue(nThread);//Remove new Thread's TCB from ready queue; 
+        if(nThread!=NULL)
+            DeleteThreadFromReadyQueue(nThread);//Remove new Thread's TCB from ready queue; 
+
                             //TODO: 여기서 컨텍스트 스위칭을 하면 STOP이 될텐데...? pasue로 어케하지
         //Set new Thread status to running & ContextSwitching to the new thread
-        printf("thread _ join Context switch ");
+        // printf("thread _ join Context switch ");
         __ContextSwitch(pCurrentThread->pid, nThread->pid);
 
         pause();//and waiting...나중에 child 가 종료가 되면 다음 문장 실행
@@ -219,7 +216,7 @@ int thread_join(thread_t tid, void * * retval){
 }
 int thread_exit(void * retval){
     //모든 스레드는 리턴되기 전에 얘를 무조건 호출해야 한다.
-    printf("exit\n");
+    // printf("exit\n");
 
     thread_t tid = find_tid(pCurrentThread->pid);//TODO: 필요한건가? 안필요한거같은데
     Thread * pThread = pCurrentThread;//Get this thread's TCB through pCurrentThread;
@@ -232,31 +229,30 @@ int thread_exit(void * retval){
 
     //스레드가 exit 하면 부모스레드에서 시그널을 받고 컨텍스트 스위치 아닌가?
 
-
     //Select new thread to run on CPU;
-    // Thread * nThread = GetThreadFromReadyQueue();
-    // if(nThread!=NULL){
-    //     //Remove new thread's TCB from ready queue
-    //     DeleteThreadFromReadyQueue(nThread);
-    //     //set new thread status to ruuning & Context Switching
-    //     printf("thread exit context switch ");
-    //     __ContextSwitch(pThread->pid,nThread->pid);
-    // }
+    Thread * nThread = GetThreadFromReadyQueue();
+    if(nThread!=NULL){
+        //Remove new thread's TCB from ready queue
+        DeleteThreadFromReadyQueue(nThread);
+        //set new thread status to ruuning & Context Switching
+        printf("thread exit context switch ");
+        __ContextSwitch(pThread->pid,nThread->pid);
+    }
     //TODO: 이러면 자원할당은 어떻게 하지? SIGSTOP상태같은건가? 할당해제 안해줘도 되나?
-    printf("곧 exit 합니닷 : %d\n",pThread->pid);
-    int prtPid = getppid();
-    kill(prtPid,SIGUSR1);
+    kill(getppid(),SIGUSR1);
+    printf("곧 exit 합니닷 : %d prtpid : %d \n",pThread->pid,getppid());
+    
     exit(pThread->pid);
 }
 void print_pThreadEnt(){
-    printf("-------pThreadEnt----------------\n");
+    printf("-------pThreadEnt---------------\n",getpid());
     for(int i=0;i<MAX_THREAD_NUM && pThreadTbEnt[i].bUsed ;i++){
         printf("%d(%d:%d) ",pThreadTbEnt[i].pThread->pid,pThreadTbEnt[i].pThread->priority,pThreadTbEnt[i].pThread->status);
     }
     printf("\n------------------------------\n");
 }
 void print_pReadyQueue(){
-    printf("-------pReadyQueue----------------\n");
+    printf("-------pReadyQueue------------\n",getpid());
     for(int i=0;i<MAX_READYQUEUE_NUM;i++){
         //printf("%d ",i);
         if(pReadyQueueEnt[i].queueCount==0) continue;
@@ -271,7 +267,7 @@ void print_pReadyQueue(){
 }
 
 void print_pWaitingQueue(){
-    printf("-------pWaitingQueue---------------\n");
+    printf("-------pWaitingQueue------------\n");
     Thread * t = pWaitingQueueHead;
     while(t){
         printf("%d(%d:%d) ",t->pid,t->priority,t->status);
@@ -284,7 +280,7 @@ void print_pWaitingQueue(){
 void print_pCurrentThread(){
     printf("-------pCurrentThread---------------\n");
     printf("%d(%d:%d)",pCurrentThread->pid,pCurrentThread->priority,pCurrentThread->status);
-    printf("\n------------------------------\n");
+    printf("\n----------------------------------\n");
 }
 thread_t find_tid(int pid){
     for(int i=0;i<MAX_THREAD_NUM;i++){
