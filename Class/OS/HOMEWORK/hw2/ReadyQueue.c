@@ -33,6 +33,7 @@ void InsertThreadToReadyQueue(Thread *pThread){
 	// }
 	// printf("\n");
 	
+	
 }
 Thread *GetThreadByPid(int pid){//tid 아니고 pid로 가정
 //ReadyQueue에서 위치를 알아온다. 포인터만 알아오면 된다.

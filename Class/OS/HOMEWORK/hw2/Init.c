@@ -2,15 +2,19 @@
 
 void Init(void)
 {
+    
     //Create ready queue and waiting queue
     // Initailize thread scheduler
     if(signal(SIGALRM, schedule)==SIG_ERR){
         perror("signal() error!");
     }
-    if(signal(SIGUSR1, wakeUp)==SIG_ERR){
+    // if(signal(SIGUSR1, wakeUp)==SIG_ERR){
+    //     perror("signal() error!");
+    // }
+    if(signal(SIGUSR2, RunScheduler)==SIG_ERR){
         perror("signal() error!");
     }
-    if(signal(SIGUSR2, RunScheduler)==SIG_ERR){
+    if(signal(SIGCHLD, signalHandler)==SIG_ERR){
         perror("signal() error!");
     }
     for(int i=0;i<MAX_THREAD_NUM;i++){//TCB 초기화
@@ -27,13 +31,20 @@ void Init(void)
     pWaitingQueueHead = NULL;
     pWaitingQueueTail = NULL;
 }
+void signalHandler(int signum){
+    if(signum==SIGCHLD){
+        printf("SIGCHLD@\n");
+        pause();
+    }
+    else if(signum==SIGUSR2){
+        printf("SIGUSR2@ ");
+        RunScheduler();
+    }
+    
+}
 void schedule(int signum){
         alarm(0);
-        // printf("\n\nScheduler실행(밑은 현재상태)\n");
-        // print_pThreadEnt();
-        // print_pWaitingQueue();
-        // print_pReadyQueue();
-        // print_pCurrentThread();
+        //printf("\n\nScheduler실행(밑은 현재상태)\n");
         //ReadyQueue is empty?
         if(!IsReadyQueueEmpty()){//No
             
@@ -43,7 +54,6 @@ void schedule(int signum){
 
             InsertThreadToReadyQueue(pCurrentThread);//put running thread to the tail of ready queue
             pCurrentThread->status=THREAD_STATUS_READY;
-
             
             //printf("상태 변경 scheduler Context Switch ");
             __ContextSwitch(pCurrentThread->pid,nThread->pid);

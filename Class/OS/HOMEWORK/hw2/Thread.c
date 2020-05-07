@@ -182,9 +182,8 @@ void wakeUp(int signum){
 }
 
 int thread_join(thread_t tid, void * * retval){
-    if(signal(SIGUSR2, RunScheduler)==SIG_ERR){
-        perror("signal() error!");
-    }
+    // printf("mainPid ; %d \n",mainPid);
+    kill(mainPid,SIGUSR2);
     printf("thread_join child : %d를 기다릴거임 \n",pThreadTbEnt[tid].pThread->pid);
     thread_t pTid = thread_self();//TastCase 프로세스(부모)
     int pPid = pThreadTbEnt[pTid].pThread->pid;//TastCase 프로세스
@@ -196,23 +195,28 @@ int thread_join(thread_t tid, void * * retval){
         Thread * nThread = GetThreadFromReadyQueue();//Select new Thread to run on CPU(scheduler);
         if(nThread!=NULL)
             DeleteThreadFromReadyQueue(nThread);//Remove new Thread's TCB from ready queue; 
-
-                            //TODO: 여기서 컨텍스트 스위칭을 하면 STOP이 될텐데...? pasue로 어케하지
+            nThread->status = THREAD_STATUS_RUN;
+            pCurrentThread = nThread;
+            printf("join -> %d sigcont \n",nThread->pid);
+            kill(nThread->pid , SIGCONT);
+        //TODO: 여기서 컨텍스트 스위칭을 하면 STOP이 될텐데...? pasue로 어케하지
         //Set new Thread status to running & ContextSwitching to the new thread
         // printf("thread _ join Context switch ");
-        __ContextSwitch(pCurrentThread->pid, nThread->pid);
-
+        //pCurrentThread->status = THREAD_STATUS_ZOMBIE;
+        
+        // __ContextSwitch(pCurrentThread->pid, nThread->pid);
+        //TODO: 여기서 컨텍스트 스위칭
         pause();//and waiting...나중에 child 가 종료가 되면 다음 문장 실행
+        
         //SIGCHLD를 받고 다시 핸들러 실행 후 다음을 계속 실행한다.
         printf("parent wake up !\n");
     }
         //zombie reaping 작업 child Thread 청소
         retval = (int *)(&(chdThread->exitCode));//Get child's TCB Put exitCode into retVal
         // TODO: & 게 우선인가 -> 게 우선인가
-
         //xxxxDeleteThreadFromWaitingQueue(chdThread);xxx 이게 다이어그램에는 있는데 cancel에 포함되어있어서..
         //TODO: Remove child's TCB from waiting queue?
-        thread_cancel(chdThread);
+        thread_cancel(tid);
 }
 int thread_exit(void * retval){
     //모든 스레드는 리턴되기 전에 얘를 무조건 호출해야 한다.
@@ -245,14 +249,14 @@ int thread_exit(void * retval){
     exit(pThread->pid);
 }
 void print_pThreadEnt(){
-    printf("-------pThreadEnt---------------\n",getpid());
+    printf("-------pThreadEnt---------------\n");
     for(int i=0;i<MAX_THREAD_NUM && pThreadTbEnt[i].bUsed ;i++){
         printf("%d(%d:%d) ",pThreadTbEnt[i].pThread->pid,pThreadTbEnt[i].pThread->priority,pThreadTbEnt[i].pThread->status);
     }
     printf("\n------------------------------\n");
 }
 void print_pReadyQueue(){
-    printf("-------pReadyQueue------------\n",getpid());
+    printf("-------pReadyQueue------------\n");
     for(int i=0;i<MAX_READYQUEUE_NUM;i++){
         //printf("%d ",i);
         if(pReadyQueueEnt[i].queueCount==0) continue;
