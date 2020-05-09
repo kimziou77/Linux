@@ -33,37 +33,41 @@ void Init(void)
 }
 void signalHandler(int signum){
     if(signum == SIGALRM){
-        printf("SIGALRM@ %d \n",getpid());
+        // printf("SIGALRM@ %d \n",getpid());
         schedule(signum);
     }
     else if(signum==SIGCHLD){
+        // printf("SIGCHLD@ %d \n",getpid());
         RunScheduler();
-        printf("SIGCHLD@ %d \n",getpid());
     }
     else if(signum==SIGUSR2){
-        printf("SIGUSR2@ %d ",getpid());
-        RunScheduler();
+        // printf("SIGUSR2@ alarm(0) %d ",getpid());
+        alarm(0);
     }
     else if(signum==SIGUSR1){
-        printf("SIGUSR1 @ %d\n",getpid());
-        RunScheduler();
+        // printf("SIGUSR1 @ %d\n",getpid());
+        // wakeUp();
     }
 }
 void schedule(int signum){
         alarm(0);
-        //printf("schedule %d \n",getpid());
+        // printf("schedule %d \n",getpid());
         //printf("\n\nScheduler실행(밑은 현재상태)\n");
         //ReadyQueue is empty?
         if(!IsReadyQueueEmpty()){//No
-            
             Thread * nThread = GetThreadFromReadyQueue();//get new thread
-            if(nThread->priority < pCurrentThread->priority){
+            // printf("@\n");
+            if(nThread->priority <= pCurrentThread->priority){
+                // printf("@@@\n");
                 DeleteThreadFromReadyQueue(nThread);//Remove TCB of new thread From ready queue
                 InsertThreadToReadyQueue(pCurrentThread);//put running thread to the tail of ready queue
                 pCurrentThread->status=THREAD_STATUS_READY;
 
+                // printf("@@@@\n");
                 __ContextSwitch(pCurrentThread->pid,nThread->pid);
             }
            
         }
+        // printf("####\n");
+        // alarm(TIMESLICE);
 }

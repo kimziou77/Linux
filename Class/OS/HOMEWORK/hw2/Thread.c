@@ -155,14 +155,14 @@ thread_t thread_self()//tid 반환한다
     }
     printf("NONE ID \n");
 }
-void wakeUp(int signum){
+void wakeUp(){
     printf("wake up @ %d \n",getpid());
-
 
     Thread * prtThread = pThreadTbEnt[0].pThread;
 
     Thread * nThread = GetThreadFromReadyQueue();
-    if(nThread!=NULL && prtThread->priority > nThread->priority){
+    if(nThread!=NULL && prtThread->priority >= nThread->priority){
+        printf("1@@\n");
         //Remove new thread's TCB from ready queue
         DeleteThreadFromReadyQueue(nThread);
         //set new thread status to ruuning & Context Switching
@@ -175,6 +175,7 @@ void wakeUp(int signum){
         //__ContextSwitch(pThread->pid,nThread->pid);
     }
     else if(nThread==NULL||prtThread->priority < nThread->priority){
+        printf("2@@\n");
         DeleteThreadFromWaitingQueue(prtThread); //Waiting Queue에서 제거
         pCurrentThread=prtThread;
         prtThread->status = THREAD_STATUS_RUN;
@@ -208,44 +209,48 @@ int thread_join(thread_t tid, void * * retval){
             // kill(mainPid,SIGUSR2);
             // __ContextSwitch()
             
-            if(sighold(SIGCHLD)==0){
-                printf("sighold succeess\n");
-            }
-            // kill(mainPid,SIGUSR1);
-            // kill(getpid(),SIGUSR1);//얘네가 알람을 설정해줘야 하는데
-            // pause();
-            // alarm(2);
-            
-            pause();//CONT신호 전송 -> 다른 신호 올 떄까지 blocking 자식이 부모한테로 보내는게 없으니까 멈춤상태로 계속있을 듯
+            // if(sighold(SIGCHLD)==0){
+            //     printf("sighold succeess\n");
+            // }
+            // pause();//CONT신호 전송 -> 다른 신호 올 떄까지 blocking 자식이 부모한테로 보내는게 없으니까 멈춤상태로 계속있을 듯
+
+            alarm(TIMESLICE);//TODO: 순서?
             kill(nThread->pid , SIGCONT);
-            if(sigrelse(SIGCHLD)==0){
-                printf("Sigrelse succeess\n");
-            }
+            kill(mainPid, SIGUSR2);
+            // pause();
+            // if(sigrelse(SIGCHLD)==0){//그럼 차일드 받을때마다 얘가 일어나서 pause 를 안할텐데
+            //     printf("Sigrelse succeess\n");
+            // }
             // kill(getpid(),SIGCHLD);
-            pause();
-            
+            while(chdThread->status != THREAD_STATUS_ZOMBIE)    {
+                // print_all();
+                // printf("아직 좀비아님 다시 pause() \n");
+                pause();
+            }
+
         }
         //TODO: 여기서 컨텍스트 스위칭을 하면 STOP이 될텐데...? pasue로 어케하지
         //Set new Thread status to running & ContextSwitching to the new thread
-        pause();//SIGCHLD
-        printf("Ffffffffffffff\n");
+
         // kill(getpid(),SIGSTOP);//and waiting...나중에 child 가 종료가 되면 다음 문장 실행
         //SIGCHLD를 받고 다시 핸들러 실행 후 다음을 계속 실행한다.
     }
-    pause();
     // while(chdThread->status != THREAD_STATUS_ZOMBIE) pause();
     printf("parent wake up !\n");
         //zombie reaping 작업 child Thread 청소
-        retval = (int *)(&(chdThread->exitCode));//Get child's TCB Put exitCode into retVal
+    pause();
+    //int chdTid = find_tid(chdThread->pid);
+    // thread_cancel(chdTid);
+    retval = (int *)(&(chdThread->exitCode));//Get child's TCB Put exitCode into retVal
         // TODO: & 게 우선인가 -> 게 우선인가
+    wakeUp();
         //xxxxDeleteThreadFromWaitingQueue(chdThread);xxx 이게 다이어그램에는 있는데 cancel에 포함되어있어서..
         //TODO: Remove child's TCB from waiting queue?
-        printf("retVal : %d\n",*(int *)retval);
+    printf("retVal : %d\n",*(int *)retval);
         //thread_cancel(tid);
 }
 int thread_exit(void * retval){
-    //모든 스레드는 리턴되기 전에 얘를 무조건 호출해야 한다.
-    // printf("exit\n");
+    printf("exit\n");
 
     thread_t tid = find_tid(pCurrentThread->pid);//TODO: 필요한건가? 안필요한거같은데
     Thread * pThread = pCurrentThread;//Get this thread's TCB through pCurrentThread;
@@ -260,9 +265,10 @@ int thread_exit(void * retval){
     //Select new thread to run on CPU;
 
     //TODO: 이러면 자원할당은 어떻게 하지? SIGSTOP상태같은건가? 할당해제 안해줘도 되나?
-    kill(pThreadTbEnt[0].pThread->pid, SIGCONT);
     printf("곧 exit 합니닷 : %d prtpid : %d \n",pThread->pid,getppid());
-    
+    kill(getppid(),SIGUSR1);
+    pause();
+    exit(0); // wakeup
     // exit(pThread->pid);TODO:
 }
 
