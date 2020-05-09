@@ -156,13 +156,13 @@ thread_t thread_self()//tid 반환한다
     printf("NONE ID \n");
 }
 void wakeUp(){
-    printf("wake up @ %d \n",getpid());
+    // printf("wake up @ %d \n",getpid());
 
     Thread * prtThread = pThreadTbEnt[0].pThread;
 
     Thread * nThread = GetThreadFromReadyQueue();
     if(nThread!=NULL && prtThread->priority >= nThread->priority){
-        printf("1@@\n");
+        // printf("1@@\n");
         //Remove new thread's TCB from ready queue
         DeleteThreadFromReadyQueue(nThread);
         //set new thread status to ruuning & Context Switching
@@ -170,20 +170,19 @@ void wakeUp(){
         nThread->status = THREAD_STATUS_RUN;
         pCurrentThread = nThread;
 
-        print_all();
+        // print_all();
         kill(nThread->pid, SIGCONT);
         //__ContextSwitch(pThread->pid,nThread->pid);
     }
     else if(nThread==NULL||prtThread->priority < nThread->priority){
-        printf("2@@\n");
+        // printf("2@@\n");
         DeleteThreadFromWaitingQueue(prtThread); //Waiting Queue에서 제거
         pCurrentThread=prtThread;
         prtThread->status = THREAD_STATUS_RUN;
-        print_all();
+        // print_all();
         kill(prtThread->pid,SIGCONT);
         //
     }
-    
     //시그널 핸들러 안에서 무엇을 해야한다면
     //Priority based Round Robin을 해줘야함.
 }
@@ -236,17 +235,16 @@ int thread_join(thread_t tid, void * * retval){
         //SIGCHLD를 받고 다시 핸들러 실행 후 다음을 계속 실행한다.
     }
     // while(chdThread->status != THREAD_STATUS_ZOMBIE) pause();
-    printf("parent wake up !\n");
+    // printf("parent wake up !\n");
         //zombie reaping 작업 child Thread 청소
-    pause();
     //int chdTid = find_tid(chdThread->pid);
     // thread_cancel(chdTid);
-    retval = (int *)(&(chdThread->exitCode));//Get child's TCB Put exitCode into retVal
+    *retval = (int *)(&(chdThread->exitCode));//Get child's TCB Put exitCode into retVal
         // TODO: & 게 우선인가 -> 게 우선인가
     wakeUp();
         //xxxxDeleteThreadFromWaitingQueue(chdThread);xxx 이게 다이어그램에는 있는데 cancel에 포함되어있어서..
         //TODO: Remove child's TCB from waiting queue?
-    printf("retVal : %d\n",*(int *)retval);
+    // printf("retVal : %d\n",*((int *)retval));
         //thread_cancel(tid);
 }
 int thread_exit(void * retval){
@@ -265,7 +263,7 @@ int thread_exit(void * retval){
     //Select new thread to run on CPU;
 
     //TODO: 이러면 자원할당은 어떻게 하지? SIGSTOP상태같은건가? 할당해제 안해줘도 되나?
-    printf("곧 exit 합니닷 : %d prtpid : %d \n",pThread->pid,getppid());
+    // printf("곧 exit 합니닷 : %d prtpid : %d \n",pThread->pid,getppid());
     kill(getppid(),SIGUSR1);
     pause();
     exit(0); // wakeup
