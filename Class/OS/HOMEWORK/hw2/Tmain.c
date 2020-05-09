@@ -1,8 +1,8 @@
 #include "Headers.h"
 #include "TestCase1.h"
-#include "TestCase2.h"
-#include "TestCase3.h"
-#include "TestCase4.h"
+// #include "TestCase2.h"
+// #include "TestCase3.h"
+// #include "TestCase4.h"
 
 
 int main(int argc, char* argv[]){
@@ -27,11 +27,15 @@ int main(int argc, char* argv[]){
 			break;
 
 		case 2:
-			//thread_create(&tid2,NULL,0,(void*)TestCase2,0);
+			// thread_create(&tid2,NULL,0,(void*)TestCase2,0);
 			break;
 		case 3:
-			thread_create(&tid3,NULL,0,(void*)TestCase3,0);
+			// thread_create(&tid3,NULL,0,(void*)TestCase3,0);
 			break;
+		case 4:
+			// thread_create(&tid4,NULL,0,(void*)TestCase4,0);
+			break;
+
 	}
 	
 	RunScheduler();

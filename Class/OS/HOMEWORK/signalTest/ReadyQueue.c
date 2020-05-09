@@ -1,8 +1,11 @@
 #include "Headers.h"
 
+//TODO: 인자들을 통일시켜줄 수 없나?
 void InsertThreadToReadyQueue(Thread *pThread){
 	
 	int priority = pThread->priority;
+    //printf("현재 실행중인 스레드의 우선순위 : %d\n",priority);
+	
     //Thread -> Ready Tail로 넣어줘야함
     // printf("InsertThreadToReadyQueue %d (%d)\n",pThread->pid,pThread->priority);
 	
@@ -35,7 +38,6 @@ void InsertThreadToReadyQueue(Thread *pThread){
 Thread *GetThreadByPid(int pid){//tid 아니고 pid로 가정
 //ReadyQueue에서 위치를 알아온다. 포인터만 알아오면 된다.
     int tid = find_tid(pid);
-	
     Thread * t = pThreadTbEnt[tid].pThread;
     Thread* cursor = pReadyQueueEnt[t->priority].pHead;
 
@@ -48,7 +50,6 @@ Thread *GetThreadByPid(int pid){//tid 아니고 pid로 가정
 }
 
 Thread *GetThreadFromWaitingQueue(int pid){
-	
 	// printf("Get Thread From Waiting Queue \n");
 	//waiting queue로부터는 waiting이 끝난 애들을 데리고 와야한다.
     if(pWaitingQueueHead == NULL) return NULL;
@@ -57,23 +58,16 @@ Thread *GetThreadFromWaitingQueue(int pid){
 	
 	if(target==pWaitingQueueHead){//target이 헤드일때
 		Thread * next = target -> phNext;
-		if(next!=NULL){
-			pWaitingQueueHead = next;
-			next -> phPrev = NULL;
-		}
-		else{
-			pWaitingQueueHead=NULL;
-		}
+		pWaitingQueueHead = target->phNext;
+		next -> phPrev = NULL;
 	}
 	else if(target==pWaitingQueueTail){//target이 Tail일때
-	// printf("target  Tail\n");
 		Thread * prev = target->phPrev;
-		pWaitingQueueTail = prev;
+		pWaitingQueueTail = target->phPrev;
 		prev->phNext=NULL;
 
 	}
 	else{	//중앙에 있으면
-	// printf("target  Middle\n");
 		Thread * next = target -> phNext;
 		Thread * prev = target->phPrev;
 		prev->phNext = next;
@@ -81,9 +75,7 @@ Thread *GetThreadFromWaitingQueue(int pid){
 	}
     	
 	target->phNext=NULL;
-	target->phPrev=NULL;
     target ->status = THREAD_STATUS_ZOMBIE;
-	// printf("웨이팅큐에서 삭제 성공\n");
     return target;
 }
 Thread * GetThreadFromReadyQueue(){
@@ -105,26 +97,22 @@ BOOL DeleteThreadFromReadyQueue(Thread *pThread){
 	//no Object -> false;
 	if (pThread == NULL) return FALSE;
     //이미 레디큐에 없으면 삭제할 필요가 없지
-
-	int pid = GetThreadByPid(pThread->pid);
-    if(pid==NULL) return FALSE;
+    if(GetThreadByPid(pThread->pid)==NULL) return FALSE;
 
     int pr=pThread->priority;
 	//printf("헤드에 들어있는건 무엇일까요 : %d \n\n",pReadyQueueEnt[pr].pHead->pid);
 	if (pReadyQueueEnt[pr].pHead == pThread){ // 1. 헤드쪽에 위치
 		if (pReadyQueueEnt[pr].queueCount== 1) { // 헤드쪽에 삭제하려는것 하나만 존재
+			
 			pReadyQueueEnt[pr].pHead = NULL;
 		}
 		else{
-			// printf("pHead pid : %d, NextPid : %d\n",pReadyQueueEnt[pr].pHead->pid, pReadyQueueEnt[pr].pHead->phNext->pid);
 			pReadyQueueEnt[pr].pHead = pThread->phNext;
-			// pThread->phNext->phPrev=NULL;
 			pReadyQueueEnt[pr].pHead -> phPrev = NULL;
 		}
 	}
 	else if (pReadyQueueEnt[pr].pTail == pThread) { // 2. 테일쪽에 위치
 		if (pReadyQueueEnt[pr].queueCount== 1) { // 테일쪽에 삭제하려는것 하나만 존재
-			printf("Tail 1\n");
 			pReadyQueueEnt[pr].pTail = NULL;
 		}
 		else {
@@ -150,10 +138,11 @@ BOOL DeleteThreadFromReadyQueue(Thread *pThread){
 void WaitingQueue_To_ReadyQueue(Thread * pThread){
     //Waiting-> Ready
 	
-	DeleteThreadFromWaitingQueue(pThread);//waiting queue에서 삭제
-
+	GetThreadFromWaitingQueue(pThread->pid);//waiting queue에서 삭제
     int pr = pThread->priority;
 	InsertThreadToReadyQueue(pThread);//ReadyQueue의 Tail로 넣는다.
+    
+    pReadyQueueEnt[pr].queueCount++;
 	pThread->status = THREAD_STATUS_READY;
 }
 void InsertThreadToWaitingQueue(Thread *pThread){

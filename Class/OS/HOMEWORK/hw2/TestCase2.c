@@ -1,5 +1,5 @@
 #include "TestCase2.h"
-
+#include "Headers.h"
 
 void* Tc2ThreadProc(void* param)
 {
@@ -36,7 +36,7 @@ void TestCase2(void)
 			printf("TestCase2: Thread suspending Failed..\n");
 			assert(0);
 		}
-
+		printf("suspend succeess\n");
 		Thread *temp = pWaitingQueueHead;
 
 		printf("current waiting queue : ");
@@ -52,12 +52,13 @@ void TestCase2(void)
 		printf("\n");
 	}
 
+
 	printf("\n");
 	printf("<resume start>\n");
 	for (i=0;i<TOTAL_THREAD_NUM;i++)
 	{
 		sleep(2);
-
+		printf("tid : %d resume \n",tid[i]);
 		if(thread_resume(tid[i])==-1)
 		{
 			printf("Testcase2: Thread resume Failed\n");
@@ -142,7 +143,6 @@ void TestCase2(void)
 	for (i=0;i<TOTAL_THREAD_NUM;i++)
 	{
 		sleep(2);
-
 		if(thread_cancel(tid[i])==-1)
 		{
 			printf("Testcase2: Thread cancel Failed\n");
@@ -160,7 +160,7 @@ void TestCase2(void)
 	}
 	printf("\n");
 	printf("Every thread is cancelled,\nTestcase2 is end, Please Ctrl+C\n");
+	print_all();
 
 	return ;
 }
-

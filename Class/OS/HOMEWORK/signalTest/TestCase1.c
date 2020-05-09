@@ -2,6 +2,7 @@
 
 void* Tc1ThreadProc(void* param)
 {
+	
 	thread_t tid = 0;
 	int count = 0;
 	int i;
@@ -10,11 +11,13 @@ void* Tc1ThreadProc(void* param)
 	tid = thread_self();
 
 	for(int i=0;i<5;i++){
+		printf("%d sleep\n",getpid());
 		sleep(2);
-		printf("Tc1ThreadProc: my thread id (%d), arg is (%d)\n", (int)tid, *((int*)param));
+		printf("%d wakeup\n",getpid());
+		printf("Tc1ThreadProc: my thread id (%d), arg is (%d) %d pid is : %d \n", (int)tid, *((int*)param),i,getpid());
 		count++;
+		//TODO: 이 카운트는 뭐야 
 	}
-
 	retVal = (int*)param;
 	thread_exit(retVal);
 	return NULL;
@@ -35,12 +38,11 @@ void TestCase1(void)
 
 	for(i=0;i<TOTAL_THREAD_NUM;i++)
 	{
-		int* retVal;
-		thread_join(tid[i],(void **)&retVal);
+		int* retVal;	
 
+		thread_join(tid[i],(void **)&retVal);
 		printf("Thread [ %d ] is finish Return : [ %d ] \n",(int)tid[i], *retVal);
 	}
 
 	return ;
 }
-

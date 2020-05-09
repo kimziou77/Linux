@@ -36,12 +36,10 @@ void TestCase1(void)
 	thread_create(&tid[3], NULL, 1, (void*)Tc1ThreadProc,(void*) &i4);	
 	thread_create(&tid[4], NULL, 1, (void*)Tc1ThreadProc,(void*) &i5);
 
-	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n");
 	for(i=0;i<TOTAL_THREAD_NUM;i++)
 	{
 		int* retVal;	
-		//TODO: dffff ss
-		// kill(mainPid,SIGUSR2);
+
 		thread_join(tid[i],(void **)&retVal);
 		printf("Thread [ %d ] is finish Return : [ %d ] \n",(int)tid[i], *retVal);
 	}
