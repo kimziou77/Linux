@@ -6,10 +6,6 @@ void* Tc2ThreadProc(void* param)
 	
 	thread_t tid = 0;
 	tid = thread_self();
-	
-	printf("Tc2ThreadProc: my thread id:(%d), arg : %d | pid : %d\n", (int)tid, *((int*)param), getpid());
-
-
 	while (1)
 	{
 		printf("Tc2ThreadProc: my thread id:(%d), arg : %d | pid : %d\n", (int)tid, *((int*)param),getpid());
@@ -32,9 +28,9 @@ void TestCase2(void)
 	printf("<suspend start>\n");
 	for (i = 0; i < TOTAL_THREAD_NUM;i++)
 	{	
-		printf("sleep2before\n");
+		printf("[=]sleep2before\n");
 		sleep(2);
-		printf("sleep2after\n");
+		printf("[=]sleep2after\n");
 		// print_all();
 
 		if (thread_suspend(tid[i]) == -1)
@@ -64,7 +60,9 @@ void TestCase2(void)
 	printf("<resume start>\n");
 	for (i=0;i<TOTAL_THREAD_NUM;i++)
 	{
+		if(DEBUGGING) printf("[=]resume before\n");
 		sleep(2);
+		if(DEBUGGING) printf("[=]resume after\n");
 		printf("tid : %d resume \n",tid[i]);
 		if(thread_resume(tid[i])==-1)
 		{

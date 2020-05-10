@@ -55,7 +55,7 @@ Thread *GetThreadFromWaitingQueue(int pid){
     if(pWaitingQueueHead == NULL) return NULL;
     int tid = find_tid(pid);
     Thread * target = pThreadTbEnt[tid].pThread;
-	if(DEBUGGING) printf("GetThreadFromWaitingQueue: tartget %d prev %d next %d \n", target, target->phPrev, target->phNext);
+	if(DEBUGGING) printf("GetThreadFromWaitingQueue: tartget %d prev %d next %d status %d \n", target, target->phPrev, target->phNext,target->status);
 
 	if(target->status != THREAD_STATUS_WAIT && target->status != THREAD_STATUS_ZOMBIE)
 	{

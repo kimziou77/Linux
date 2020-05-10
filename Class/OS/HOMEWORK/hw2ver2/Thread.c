@@ -43,7 +43,24 @@ int thread_create(thread_t * thread, thread_attr_t *attr, int priority, void *(*
 
 int thread_suspend(thread_t tid){
     if(DEBUGGING)   printf("[+] thread_suspend\n");
-
+    if(pThreadTbEnt[tid].bUsed==FALSE) return FAILED;//멈추려는 스레드가 존재하지 않으면 FAILED
+    Thread * pThread = pThreadTbEnt[tid].pThread;//멈출 대상
+        if(pThread->status==THREAD_STATUS_RUN){ //RUN
+        if(DEBUGGING) printf("suspend @ RUN\n");
+        InsertThreadToWaitingQueue(pThread);//Move TCB to waiting queue
+        pThread->status = THREAD_STATUS_WAIT;//Set status to waiting
+        kill(mainPid,SIGALRM);
+    }
+    else if(pThread->status==THREAD_STATUS_READY){  //READY
+        if(DEBUGGING) printf("suspend @@ READY\n");
+        DeleteThreadFromReadyQueue(pThread);
+        InsertThreadToWaitingQueue(pThread);//Move TCB to waiting queue
+        pThread->status= THREAD_STATUS_WAIT;//Set thread status to waiting
+    }
+    else if(pThread->status==THREAD_STATUS_WAIT){// WAIT
+        if(DEBUGGING) printf("suspend @@@ WAIT");
+    }
+    
     if(DEBUGGING)   printf("[-] thread_suspend\n");
     return SUCCESS;
 }
@@ -82,6 +99,19 @@ int thread_cancel(thread_t tid)//해당 스레드를 terminate 시키는 함수
 int thread_resume(thread_t tid)
 {
     if(DEBUGGING)   printf("[+] thread_resume\n");
+    Thread* targetThread = pThreadTbEnt[tid].pThread;
+
+     if(targetThread->priority < pCurrentThread->priority){//resume대상이 더 우선순위가 높으면
+        InsertThreadToReadyQueue(pCurrentThread);
+        pCurrentThread->status = THREAD_STATUS_READY;
+        WaitingQueue_To_ReadyQueue(targetThread);
+        targetThread->status=THREAD_STATUS_READY;
+        kill(mainPid,SIGALRM);//둘 다 레디큐에 넣고 메인에게 컨텍스트요청
+    }
+    else{
+        targetThread->status =THREAD_STATUS_READY;
+        WaitingQueue_To_ReadyQueue(targetThread);
+    }
 
     if(DEBUGGING)   printf("[-] thread_resume\n");
     return SUCCESS;
