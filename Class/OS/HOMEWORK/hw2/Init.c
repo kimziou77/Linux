@@ -1,22 +1,41 @@
 #include "Headers.h"
+#include <signal.h>
 
 void Init(void)
 {
+        struct sigaction sa;
+
+    sa.sa_handler = signalHandler;
+    sa.sa_flags = SA_SIGINFO;
+    sa.sa_flags= SA_NOCLDSTOP;
     
+     if(sigaction(SIGALRM, &sa, 0)==SIG_ERR){
+        perror("signal() error!");
+    }
+    if(sigaction(SIGUSR1, &sa, 0)==SIG_ERR){
+        perror("signal() error!");
+    }
+    if(sigaction(SIGUSR2, &sa, 0)==SIG_ERR){
+        perror("signal() error!");
+    }
+    if(sigaction(SIGCHLD, &sa, 0)==SIG_ERR){
+        perror("signal() error!");
+    }
+
     //Create ready queue and waiting queue
     // Initailize thread scheduler
-    if(signal(SIGALRM, signalHandler)==SIG_ERR){
-        perror("signal() error!");
-    }
-    if(signal(SIGUSR1, signalHandler)==SIG_ERR){
-        perror("signal() error!");
-    }
-    if(signal(SIGUSR2, signalHandler)==SIG_ERR){
-        perror("signal() error!");
-    }
-    if(signal(SIGCHLD, signalHandler)==SIG_ERR){
-        perror("signal() error!");
-    }
+    // if(signal(SIGALRM, signalHandler)==SIG_ERR){
+    //     perror("signal() error!");
+    // }
+    // if(signal(SIGUSR1, signalHandler)==SIG_ERR){
+    //     perror("signal() error!");
+    // }
+    // if(signal(SIGUSR2, signalHandler)==SIG_ERR){
+    //     perror("signal() error!");
+    // }
+    // if(signal(SIGCHLD, signalHandler)==SIG_ERR){
+    //     perror("signal() error!");
+    // }
     for(int i=0;i<MAX_THREAD_NUM;i++){//TCB 초기화
         pThreadTbEnt[i].bUsed   = FALSE;
         pThreadTbEnt[i].pThread = NULL;
@@ -31,31 +50,41 @@ void Init(void)
     pWaitingQueueHead = NULL;
     pWaitingQueueTail = NULL;
 }
-void signalHandler(int signum){
+void signalHandler(int signum, siginfo_t *info, void *context){
+    printf("-%d call %d ", signum, info->si_pid);
+
     if(signum == SIGALRM){
-        // printf("SIGALRM@ %d \n",getpid());
+        printf("SIGALRM@ %d \n",getpid());
         schedule(signum);
     }
     else if(signum==SIGCHLD){
-        // printf("SIGCHLD@ %d \n",getpid());
-        RunScheduler();
+        printf("SIGCHLD@ %d \n",getpid());
     }
     else if(signum==SIGUSR2){
-        // printf("SIGUSR2@ alarm(0) %d ",getpid());
+        printf("SIGUSR2@ %d ",getpid());
         alarm(0);
     }
     else if(signum==SIGUSR1){
-        // printf("SIGUSR1 @ %d\n",getpid());
+        printf("SIGUSR1 @ %d\n",getpid());
+        RunScheduler();
         // wakeUp();
+    }
+    else{
+        // printf("s\n");
     }
 }
 void schedule(int signum){
         alarm(0);
+        
         // printf("schedule %d \n",getpid());
+        Thread * nThread;
         //printf("\n\nScheduler실행(밑은 현재상태)\n");
         //ReadyQueue is empty?
         if(!IsReadyQueueEmpty()){//No
-            Thread * nThread = GetThreadFromReadyQueue();//get new thread
+            nThread = GetThreadFromReadyQueue();//get new thread
+
+            // printf("schedule : cur %d new %d\n", pCurrentThread->pid, nThread->pid);
+            
             // printf("@\n");
             if(nThread->priority <= pCurrentThread->priority){
                 // printf("@@@\n");
@@ -68,6 +97,9 @@ void schedule(int signum){
             }
            
         }
-        // printf("####\n");
+        else
+            printf("####\n");
+
+
         // alarm(TIMESLICE);
 }

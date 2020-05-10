@@ -15,7 +15,9 @@ enum{FAILED = -1, SUCCESS = 0};
 
 int mainPid;
 void * AppTask(void* param);
-void signalHandler(int signum);
+//void signalHandler(int signum);
+
+void signalHandler(int signum, siginfo_t *info, void *context);
 void wakeUp();
 void Tastcase(void);
 thread_t find_tid(int pid);

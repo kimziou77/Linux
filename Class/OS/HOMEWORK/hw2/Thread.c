@@ -1,14 +1,15 @@
 #include "Headers.h"
 
-
+void sendStop(int pid){
+    kill(pid,SIGSTOP);
+}
 int thread_create(thread_t * thread, thread_attr_t *attr, int priority, void *(*start_routine) (void *), void *arg)
 {
     char* pStack;
     pStack= malloc(STACK_SIZE);
     int flags= SIGCHLD|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_VM;
     thread_t pid = clone(start_routine,(char*)pStack+STACK_SIZE,flags,arg); 
-    kill(pid,SIGSTOP);
-
+    sendStop(pid);
     printf("thread_Create %d\n",pid);
     
     //Allocate TCB
@@ -40,13 +41,14 @@ int thread_create(thread_t * thread, thread_attr_t *attr, int priority, void *(*
         //Context Switching from the running thread to child Thread
         printf("thread create ConTextSwitch ");
         __ContextSwitch(pCurrentThread->pid,childThread->pid);
-
+        
     }
     return *thread;
 }
 
 int thread_suspend(thread_t tid){
     printf("%d suspend \n",tid);
+    sighold(SIGCHLD);
     //자기 자신을 멈추는 동작은 non-precondition
     if(tid<0 || tid >= MAX_THREAD_NUM) return FAILED;//배열 인덱스초과 -> FAILED
     if(pThreadTbEnt[tid].bUsed==FALSE) return FAILED;//멈추려는 스레드가 존재하지 않으면 FAILED
@@ -55,7 +57,7 @@ int thread_suspend(thread_t tid){
 
     //Move TCB to waiting queue
     if(pThread->status==THREAD_STATUS_RUN){ //RUN
-        // printf("suspend @ RUN\n");
+        printf("suspend @ RUN\n");
         InsertThreadToWaitingQueue(pThread);//Move TCB to waiting queue
         pThread->status = THREAD_STATUS_WAIT;//Set status to waiting
         Thread * nThread = GetThreadFromReadyQueue();
@@ -64,15 +66,18 @@ int thread_suspend(thread_t tid){
         __ContextSwitch(pThread->pid,nThread->pid);//Context Switcing
     }
     else if(pThread->status==THREAD_STATUS_READY){  //READY
-        // printf("suspend @@ READY\n");
+        printf("suspend @@ READY\n");
         DeleteThreadFromReadyQueue(pThread);
         InsertThreadToWaitingQueue(pThread);//Move TCB to waiting queue
         pThread->status= THREAD_STATUS_WAIT;//Set thread status to waiting
+        // __ContextSwitch(0,0);
+        // kill(getppid(),SIGCHLD);
     }
     else if(pThread->status==THREAD_STATUS_WAIT){// WAIT
-        // printf("suspend @@@ WAIT");
+        printf("suspend @@@ WAIT");
         //noting happened
     }
+    sigrelse(SIGCHLD);
     return SUCCESS;
 }
 //자기 자신을 종료하는것은 없다
@@ -156,13 +161,13 @@ thread_t thread_self()//tid 반환한다
     printf("NONE ID \n");
 }
 void wakeUp(){
-    // printf("wake up @ %d \n",getpid());
+    printf("wake up @ %d \n",getpid());
 
     Thread * prtThread = pThreadTbEnt[0].pThread;
 
     Thread * nThread = GetThreadFromReadyQueue();
     if(nThread!=NULL && prtThread->priority >= nThread->priority){
-        // printf("1@@\n");
+        printf("1@@\n");
         //Remove new thread's TCB from ready queue
         DeleteThreadFromReadyQueue(nThread);
         //set new thread status to ruuning & Context Switching
@@ -175,7 +180,7 @@ void wakeUp(){
         //__ContextSwitch(pThread->pid,nThread->pid);
     }
     else if(nThread==NULL||prtThread->priority < nThread->priority){
-        // printf("2@@\n");
+        printf("2@@\n");
         DeleteThreadFromWaitingQueue(prtThread); //Waiting Queue에서 제거
         pCurrentThread=prtThread;
         prtThread->status = THREAD_STATUS_RUN;
@@ -205,32 +210,22 @@ int thread_join(thread_t tid, void * * retval){
             DeleteThreadFromReadyQueue(nThread);//Remove new Thread's TCB from ready queue; 
             nThread->status = THREAD_STATUS_RUN;
             pCurrentThread = nThread;
-            // kill(mainPid,SIGUSR2);
-            // __ContextSwitch()
-            
-            // if(sighold(SIGCHLD)==0){
-            //     printf("sighold succeess\n");
-            // }
-            // pause();//CONT신호 전송 -> 다른 신호 올 떄까지 blocking 자식이 부모한테로 보내는게 없으니까 멈춤상태로 계속있을 듯
 
-            alarm(TIMESLICE);//TODO: 순서?
+            
             kill(nThread->pid , SIGCONT);
-            kill(mainPid, SIGUSR2);
-            // pause();
-            // if(sigrelse(SIGCHLD)==0){//그럼 차일드 받을때마다 얘가 일어나서 pause 를 안할텐데
-            //     printf("Sigrelse succeess\n");
-            // }
+            kill(getppid(), SIGUSR2);//부모알람끄기
+            // printf("%d-%d call %d\n", SIGALRM, signum, info->si_pid);
+            alarm(TIMESLICE);
+            // pause();m
             // kill(getpid(),SIGCHLD);
+            // print_all();
             while(chdThread->status != THREAD_STATUS_ZOMBIE)    {
-                // print_all();
-                // printf("아직 좀비아님 다시 pause() \n");
                 pause();
             }
-
+            
         }
         //TODO: 여기서 컨텍스트 스위칭을 하면 STOP이 될텐데...? pasue로 어케하지
         //Set new Thread status to running & ContextSwitching to the new thread
-
         // kill(getpid(),SIGSTOP);//and waiting...나중에 child 가 종료가 되면 다음 문장 실행
         //SIGCHLD를 받고 다시 핸들러 실행 후 다음을 계속 실행한다.
     }
@@ -246,6 +241,7 @@ int thread_join(thread_t tid, void * * retval){
         //TODO: Remove child's TCB from waiting queue?
     // printf("retVal : %d\n",*((int *)retval));
         //thread_cancel(tid);
+    return SUCCESS;
 }
 int thread_exit(void * retval){
     printf("exit\n");
@@ -261,11 +257,10 @@ int thread_exit(void * retval){
 
     //스레드가 exit 하면 부모스레드에서 시그널을 받고 컨텍스트 스위치 아닌가?
     //Select new thread to run on CPU;
-
-    //TODO: 이러면 자원할당은 어떻게 하지? SIGSTOP상태같은건가? 할당해제 안해줘도 되나?
     // printf("곧 exit 합니닷 : %d prtpid : %d \n",pThread->pid,getppid());
-    kill(getppid(),SIGUSR1);
-    pause();
+    // kill(getppid(),SIGUSR1);
+    // pause();
+    kill(getppid(),SIGCHLD);
     exit(0); // wakeup
     // exit(pThread->pid);TODO:
 }
