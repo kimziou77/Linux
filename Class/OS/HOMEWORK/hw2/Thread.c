@@ -1,15 +1,12 @@
 #include "Headers.h"
 
-void sendStop(int pid){
-    kill(pid,SIGSTOP);
-}
 int thread_create(thread_t * thread, thread_attr_t *attr, int priority, void *(*start_routine) (void *), void *arg)
 {
     char* pStack;
     pStack= malloc(STACK_SIZE);
     int flags= SIGCHLD|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_VM;
     thread_t pid = clone(start_routine,(char*)pStack+STACK_SIZE,flags,arg); 
-    sendStop(pid);
+    kill(pid,SIGSTOP);
     printf("thread_Create %d\n",pid);
     
     //Allocate TCB
@@ -39,7 +36,7 @@ int thread_create(thread_t * thread, thread_attr_t *attr, int priority, void *(*
         pCurrentThread->status = THREAD_STATUS_READY;//Set the thread status to Ready
         childThread->status=THREAD_STATUS_RUN;//Set child thread status to running 
         //Context Switching from the running thread to child Thread
-        printf("thread create ConTextSwitch ");
+        // printf("thread create ConTextSwitch ");
         __ContextSwitch(pCurrentThread->pid,childThread->pid);
         
     }
@@ -163,11 +160,13 @@ thread_t thread_self()//tid 반환한다
 void wakeUp(){
     printf("wake up @ %d \n",getpid());
 
-    Thread * prtThread = pThreadTbEnt[0].pThread;
+    int pid = getpid();
+    int tid = find_tid(pid);
+    Thread * prtThread = pThreadTbEnt[tid].pThread;
 
     Thread * nThread = GetThreadFromReadyQueue();
     if(nThread!=NULL && prtThread->priority >= nThread->priority){
-        printf("1@@\n");
+        // printf("1@@\n");
         //Remove new thread's TCB from ready queue
         DeleteThreadFromReadyQueue(nThread);
         //set new thread status to ruuning & Context Switching
@@ -180,7 +179,7 @@ void wakeUp(){
         //__ContextSwitch(pThread->pid,nThread->pid);
     }
     else if(nThread==NULL||prtThread->priority < nThread->priority){
-        printf("2@@\n");
+        // printf("2@@\n");
         DeleteThreadFromWaitingQueue(prtThread); //Waiting Queue에서 제거
         pCurrentThread=prtThread;
         prtThread->status = THREAD_STATUS_RUN;
@@ -194,7 +193,7 @@ void wakeUp(){
 
 int thread_join(thread_t tid, void * * retval){
     // printf("mainPid ; %d \n",mainPid);
-    print_all();
+    // print_all();
 
     printf("thread_join child : %d를 기다릴거임 \n",pThreadTbEnt[tid].pThread->pid);
     thread_t pTid = thread_self();//TastCase 프로세스(부모)
@@ -224,7 +223,6 @@ int thread_join(thread_t tid, void * * retval){
             }
             
         }
-        //TODO: 여기서 컨텍스트 스위칭을 하면 STOP이 될텐데...? pasue로 어케하지
         //Set new Thread status to running & ContextSwitching to the new thread
         // kill(getpid(),SIGSTOP);//and waiting...나중에 child 가 종료가 되면 다음 문장 실행
         //SIGCHLD를 받고 다시 핸들러 실행 후 다음을 계속 실행한다.
@@ -235,7 +233,6 @@ int thread_join(thread_t tid, void * * retval){
     //int chdTid = find_tid(chdThread->pid);
     // thread_cancel(chdTid);
     *retval = (int *)(&(chdThread->exitCode));//Get child's TCB Put exitCode into retVal
-        // TODO: & 게 우선인가 -> 게 우선인가
     wakeUp();
         //xxxxDeleteThreadFromWaitingQueue(chdThread);xxx 이게 다이어그램에는 있는데 cancel에 포함되어있어서..
         //TODO: Remove child's TCB from waiting queue?
@@ -245,8 +242,6 @@ int thread_join(thread_t tid, void * * retval){
 }
 int thread_exit(void * retval){
     printf("exit\n");
-
-    thread_t tid = find_tid(pCurrentThread->pid);//TODO: 필요한건가? 안필요한거같은데
     Thread * pThread = pCurrentThread;//Get this thread's TCB through pCurrentThread;
 
     pThread->exitCode = *((int*)retval);//Store exitCode to exitCode in this Thread's TCB
@@ -257,10 +252,10 @@ int thread_exit(void * retval){
 
     //스레드가 exit 하면 부모스레드에서 시그널을 받고 컨텍스트 스위치 아닌가?
     //Select new thread to run on CPU;
-    // printf("곧 exit 합니닷 : %d prtpid : %d \n",pThread->pid,getppid());
-    // kill(getppid(),SIGUSR1);
-    // pause();
-    kill(getppid(),SIGCHLD);
+    // printf("곧 exit : %d prtpid : %d \n",pThread->pid,getppid());
+    
+    //kill(getppid(),SIGCHLD);
+    pCurrentThread=NULL;
     exit(0); // wakeup
     // exit(pThread->pid);TODO:
 }

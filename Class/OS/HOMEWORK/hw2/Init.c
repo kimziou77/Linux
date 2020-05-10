@@ -51,21 +51,21 @@ void Init(void)
     pWaitingQueueTail = NULL;
 }
 void signalHandler(int signum, siginfo_t *info, void *context){
-    printf("-%d call %d ", signum, info->si_pid);
+    // printf("%d\n", info->si_pid);
 
     if(signum == SIGALRM){
-        printf("SIGALRM@ %d \n",getpid());
+        // printf("SIGALRM@ %d \n",getpid());
         schedule(signum);
     }
     else if(signum==SIGCHLD){
-        printf("SIGCHLD@ %d \n",getpid());
+        // printf("SIGCHLD@ %d \n",getpid());
     }
     else if(signum==SIGUSR2){
-        printf("SIGUSR2@ %d ",getpid());
+        // printf("SIGUSR2@ %d ",getpid());
         alarm(0);
     }
     else if(signum==SIGUSR1){
-        printf("SIGUSR1 @ %d\n",getpid());
+        // printf("SIGUSR1 @ %d\n",getpid());
         RunScheduler();
         // wakeUp();
     }
@@ -76,30 +76,32 @@ void signalHandler(int signum, siginfo_t *info, void *context){
 void schedule(int signum){
         alarm(0);
         
-        // printf("schedule %d \n",getpid());
+        printf("schedule %d \n",getpid());
         Thread * nThread;
         //printf("\n\nScheduler실행(밑은 현재상태)\n");
         //ReadyQueue is empty?
         if(!IsReadyQueueEmpty()){//No
             nThread = GetThreadFromReadyQueue();//get new thread
-
+            if(pCurrentThread==NULL){
+                pCurrentThread= nThread;
+                nThread->status = THREAD_STATUS_RUN;
+                kill(nThread->pid,SIGCONT);
+            }
             // printf("schedule : cur %d new %d\n", pCurrentThread->pid, nThread->pid);
             
             // printf("@\n");
             if(nThread->priority <= pCurrentThread->priority){
                 // printf("@@@\n");
                 DeleteThreadFromReadyQueue(nThread);//Remove TCB of new thread From ready queue
-                InsertThreadToReadyQueue(pCurrentThread);//put running thread to the tail of ready queue
-                pCurrentThread->status=THREAD_STATUS_READY;
+                if(pCurrentThread->status != THREAD_STATUS_ZOMBIE){
+                    InsertThreadToReadyQueue(pCurrentThread);//put running thread to the tail of ready queue
+                    pCurrentThread->status=THREAD_STATUS_READY;
+                }
 
                 // printf("@@@@\n");
                 __ContextSwitch(pCurrentThread->pid,nThread->pid);
             }
            
         }
-        else
-            printf("####\n");
-
-
         // alarm(TIMESLICE);
 }

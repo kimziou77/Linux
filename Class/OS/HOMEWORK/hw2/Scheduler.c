@@ -2,7 +2,7 @@
 
 int RunScheduler( void )
 {
-    printf("RunScheduler %d\n",getpid());
+    // printf("RunScheduler %d\n",getpid());
     alarm(2);
     //printf("%d 의 TIMESLICE 재정의\n",getpid());
 }
@@ -12,10 +12,7 @@ void    __ContextSwitch(int curpid, int newpid){//인자를 pid 라고 가정
 
     printf("CONTEXTSWITCHIGN %d \n",getpid());
     printf("%d -> %d \n",curpid,newpid);
-    if(!curpid|!newpid){//둘중 하나가 0이면
-        kill(curpid,SIGCHLD);
-        return;
-    }
+
     int nn = find_tid(newpid);
     int cc = find_tid(curpid);
     Thread * newT = pThreadTbEnt[nn].pThread;
