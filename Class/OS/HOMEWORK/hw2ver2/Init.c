@@ -3,6 +3,7 @@
 
 void Init(void)
 {
+    mainPid = getpid();
     struct sigaction sa;
 
     sa.sa_handler = signalHandler;
@@ -46,7 +47,6 @@ void signalHandler(int signum, siginfo_t *info, void *context){
     {
         if(DEBUGGING) printf("SignalHandler : pCurrentThread - %d \n", pCurrentThread->pid);
          kill(pCurrentThread->pid,SIGSTOP);
-
 
     }   
     
