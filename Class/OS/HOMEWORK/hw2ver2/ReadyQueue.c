@@ -49,13 +49,13 @@ Thread *GetThreadByPid(int pid){//tid 아니고 pid로 가정
 
 Thread *GetThreadFromWaitingQueue(int pid){
 	
-	printf("Get Thread From Waiting Queue %d \n", pid);
+	if(DEBUGGING) printf("Get Thread From Waiting Queue %d \n", pid);
 
 	//waiting queue로부터는 waiting이 끝난 애들을 데리고 와야한다.
     if(pWaitingQueueHead == NULL) return NULL;
     int tid = find_tid(pid);
     Thread * target = pThreadTbEnt[tid].pThread;
-	printf("GetThreadFromWaitingQueue: tartget %d prev %d next %d \n", target, target->phPrev, target->phNext);
+	if(DEBUGGING) printf("GetThreadFromWaitingQueue: tartget %d prev %d next %d \n", target, target->phPrev, target->phNext);
 
 	if(target->status != THREAD_STATUS_WAIT && target->status != THREAD_STATUS_ZOMBIE)
 	{
@@ -64,11 +64,11 @@ Thread *GetThreadFromWaitingQueue(int pid){
 
 	
 	if(pWaitingQueueHead == pWaitingQueueTail){
-		// printf("@\n");
+		if(DEBUGGING) printf("@\n");
 		pWaitingQueueHead= pWaitingQueueTail =NULL;
 	}
 	else if(target==pWaitingQueueHead){//target이 헤드일때
-		// printf("@@\n");
+		if(DEBUGGING) printf("@@\n");
 		Thread * next = target -> phNext;
 		if(next!=NULL){
 			pWaitingQueueHead = next;
@@ -79,15 +79,14 @@ Thread *GetThreadFromWaitingQueue(int pid){
 		}
 	}
 	else if(target==pWaitingQueueTail){//target이 Tail일때
-		// printf("@@@1\n");
-	// printf("target  Tail\n");
+		if(DEBUGGING) printf("@@@1\n");
 		Thread * prev = target->phPrev;
-		// printf("@@@2\n");
+		if(DEBUGGING)  printf("@@@2\n");
 		pWaitingQueueTail = prev;
-		// printf("@@@3\n");
+		if(DEBUGGING) printf("@@@3\n");
 		if(prev!=NULL)
 			prev->phNext=NULL;
-		// printf("@@@4\n");
+		if(DEBUGGING) printf("@@@4\n");
 	}
 	else{	//중앙에 있으면
 	// printf("target  Middle\n");

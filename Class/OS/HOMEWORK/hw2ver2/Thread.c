@@ -89,11 +89,11 @@ int thread_resume(thread_t tid)
 
 thread_t thread_self()
 {
-    // if(DEBUGGING) printf("[+] thread_self\n");
+    if(DEBUGGING) printf("[+] thread_self\n");
     int pid= getpid();
     for(int i=0;i < MAX_THREAD_NUM;i++){
         if(pThreadTbEnt[i].pThread->pid==pid){
-            // if(DEBUGGING) printf("[-] thread_self\n");
+            if(DEBUGGING) printf("[-] thread_self\n");
             return i;// thread ID
         }
     }
@@ -145,7 +145,7 @@ int thread_join(thread_t tid, void * * retval){
   
 }
 void Reaping(int cPid){
-    // if(DEBUGGING) printf("[+] Reaping\n");
+    if(DEBUGGING) printf("[+] Reaping\n");
     int pTid = thread_self();
     int cTid = find_tid(cPid);
     Thread * pThread = pThreadTbEnt[pTid].pThread;
@@ -189,18 +189,18 @@ void Reaping(int cPid){
         if(DEBUGGING) printf("현재 돌아가고 있는 프로세스가 부모보다 우선순위가 높으면 부모는 컨텍스트 스위칭을 기다린다.\n");
     }
     }
-    // if(DEBUGGING) print_all();
+    if(DEBUGGING) print_all();
     //reaping
 
     DeleteThreadFromWaitingQueue(cThread);
-    // if(DEBUGGING) printf("DeleteThreadFromWaitingQueue End 1\n");
+    if(DEBUGGING) printf("DeleteThreadFromWaitingQueue End 1\n");
     pThreadTbEnt[cTid].bUsed = FALSE;
     pThreadTbEnt[cTid].pThread = NULL;
-// if(DEBUGGING) printf("DeleteThreadFromWaitingQueue End2 \n");
+if(DEBUGGING) printf("DeleteThreadFromWaitingQueue End2 \n");
     free(cThread->stackAddr);
     free(cThread);
-// if(DEBUGGING) printf("DeleteThreadFromWaitingQueue End 3\n");
-    // if(DEBUGGING) printf("[-] Reaping\n");
+if(DEBUGGING) printf("DeleteThreadFromWaitingQueue End 3\n");
+    if(DEBUGGING) printf("[-] Reaping\n");
 }
 int thread_exit(void * retval){
    if(DEBUGGING) printf("[+] thread_exit\n");
