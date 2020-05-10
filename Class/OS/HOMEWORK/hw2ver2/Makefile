@@ -8,8 +8,8 @@
 
 all: main.out
 
-main.out : Thread.o Scheduler.o main.o ReadyQueue.o Init.o TestCase1.o TestCase2.o TestCase3.o TestCase4.o
-	gcc -g -o main.out main.o Thread.o Scheduler.o ReadyQueue.o Init.o TestCase1.o TestCase2.o TestCase3.o TestCase4.o
+main.out : Thread.o Scheduler.o main.o ReadyQueue.o Init.o Headers.o TestCase1.o TestCase2.o TestCase3.o TestCase4.o
+	gcc -g -o main.out main.o Thread.o Scheduler.o ReadyQueue.o Init.o Headers.o TestCase1.o TestCase2.o TestCase3.o TestCase4.o
 
 main.o : main.c Headers.h TestCase1.h TestCase2.h TestCase3.h TestCase4.h
 	gcc -g -c -o main.o main.c
@@ -37,6 +37,9 @@ Tread.o: Thread.c Headers.h
 
 ReadyQueue.o : ReadyQueue.c Headers.h
 	gcc -g -c -o ReadyQueue.o ReadyQueue.c
+
+Headers.o : Headers.c Headers.h
+	gcc -g -c -o Headers.o Headers.c
 
 clean:
 	rm *.out *.o

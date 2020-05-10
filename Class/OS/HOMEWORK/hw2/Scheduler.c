@@ -3,6 +3,7 @@
 int RunScheduler( void )
 {
     // printf("RunScheduler %d\n",getpid());
+    printf("RunScheduler %d \n",getpid());
     alarm(2);
     //printf("%d 의 TIMESLICE 재정의\n",getpid());
 }

@@ -1,4 +1,5 @@
 #include "TestCase1.h"
+#include "Headers.h"
 
 void* Tc1ThreadProc(void* param)
 {
@@ -11,9 +12,9 @@ void* Tc1ThreadProc(void* param)
 	tid = thread_self();
 
 	for(int i=0;i<5;i++){
-		printf("%d sleep\n",getpid());
+		// printf("%d sleep\n",getpid());
 		sleep(2);
-		printf("%d wakeup\n",getpid());
+		// printf("%d wakeup\n",getpid());
 		printf("Tc1ThreadProc: my thread id (%d), arg is (%d) %d pid is : %d \n", (int)tid, *((int*)param),i,getpid());
 		count++;
 		//TODO: 이 카운트는 뭐야 
@@ -35,13 +36,14 @@ void TestCase1(void)
 	thread_create(&tid[2], NULL, 1, (void*)Tc1ThreadProc,(void*) &i3);	
 	thread_create(&tid[3], NULL, 1, (void*)Tc1ThreadProc,(void*) &i4);	
 	thread_create(&tid[4], NULL, 1, (void*)Tc1ThreadProc,(void*) &i5);
-
+	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n");
 	for(i=0;i<TOTAL_THREAD_NUM;i++)
 	{
 		int* retVal;	
 
 		thread_join(tid[i],(void **)&retVal);
-		printf("Thread [ %d ] is finish Return : [ %d ] \n",(int)tid[i], *retVal);
+		printf("Thread [ %d ] is finish Return : [ %d ] \n",(int)tid[i], *(int*)retVal);
+		print_all();
 	}
 
 	return ;

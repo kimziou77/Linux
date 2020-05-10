@@ -33,6 +33,7 @@ int thread_create(thread_t * thread, thread_attr_t *attr, int priority, void *(*
     }
     else{//NO
         InsertThreadToReadyQueue(childThread);//Move TCB of running thread to ready queue
+        //TODO: child -> pCurrent/?
         pCurrentThread->status = THREAD_STATUS_READY;//Set the thread status to Ready
         childThread->status=THREAD_STATUS_RUN;//Set child thread status to running 
         //Context Switching from the running thread to child Thread
@@ -157,12 +158,16 @@ thread_t thread_self()//tid 반환한다
     }
     printf("NONE ID \n");
 }
-void wakeUp(){
+void wakeUp(int pid){
+    printf("child thread : %d \n",pid);
     printf("wake up @ %d \n",getpid());
 
-    int pid = getpid();
-    int tid = find_tid(pid);
+    int Ppid = getpid();
+    int ctid = find_tid(pid);
+    int tid = find_tid(Ppid);
     Thread * prtThread = pThreadTbEnt[tid].pThread;
+    Thread * chdThread = pThreadTbEnt[ctid].pThread;
+    if(chdThread==NULL) return;
 
     Thread * nThread = GetThreadFromReadyQueue();
     if(nThread!=NULL && prtThread->priority >= nThread->priority){
@@ -187,8 +192,16 @@ void wakeUp(){
         kill(prtThread->pid,SIGCONT);
         //
     }
+    // 컨텍스트 스위칭을 하는데 여기서 자식 반환해줘야한다.
+    
+    // pThreadTbEnt[pid].bUsed = FALSE;
+    // pThreadTbEnt[pid].pThread = NULL;
+    // free(chdThread->stackAddr);
+    // free(chdThread);
+
     //시그널 핸들러 안에서 무엇을 해야한다면
     //Priority based Round Robin을 해줘야함.
+    printf("wakeUp finish\n");
 }
 
 int thread_join(thread_t tid, void * * retval){
@@ -210,7 +223,6 @@ int thread_join(thread_t tid, void * * retval){
             nThread->status = THREAD_STATUS_RUN;
             pCurrentThread = nThread;
 
-            
             kill(nThread->pid , SIGCONT);
             kill(getppid(), SIGUSR2);//부모알람끄기
             // printf("%d-%d call %d\n", SIGALRM, signum, info->si_pid);
@@ -232,16 +244,20 @@ int thread_join(thread_t tid, void * * retval){
         //zombie reaping 작업 child Thread 청소
     //int chdTid = find_tid(chdThread->pid);
     // thread_cancel(chdTid);
+
+    
     *retval = (int *)(&(chdThread->exitCode));//Get child's TCB Put exitCode into retVal
-    wakeUp();
+    wakeUp(chdThread->pid);
+    //부모가 이미 끝나있더라도 처리해줘야돼
         //xxxxDeleteThreadFromWaitingQueue(chdThread);xxx 이게 다이어그램에는 있는데 cancel에 포함되어있어서..
         //TODO: Remove child's TCB from waiting queue?
-    // printf("retVal : %d\n",*((int *)retval));
+    printf("retVal : %d\n",*((int *)retval));
         //thread_cancel(tid);
     return SUCCESS;
 }
 int thread_exit(void * retval){
     printf("exit\n");
+    kill(getppid(),SIGUSR2);
     Thread * pThread = pCurrentThread;//Get this thread's TCB through pCurrentThread;
 
     pThread->exitCode = *((int*)retval);//Store exitCode to exitCode in this Thread's TCB
@@ -254,7 +270,7 @@ int thread_exit(void * retval){
     //Select new thread to run on CPU;
     // printf("곧 exit : %d prtpid : %d \n",pThread->pid,getppid());
     
-    //kill(getppid(),SIGCHLD);
+    //kill(getppid(),SIGUSR2);
     pCurrentThread=NULL;
     exit(0); // wakeup
     // exit(pThread->pid);TODO:
