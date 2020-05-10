@@ -46,7 +46,7 @@ void schedule(int signum){
                     if(DEBUGGING) printf("새 프로세스의 우선순위가 더 높거나, 같은 우선순위의 프로세스가 타임슬라이스가 다 되었음\n");
                     DeleteThreadFromReadyQueue(nThread);//Remove TCB of new thread From ready queue
 
-                if(DEBUGGING) printf("현재 실행중인 프로세스가 존재함 DeleteThreadFromReadyQueue %d \n",nThread);
+                    if(DEBUGGING) printf("현재 실행중인 프로세스가 존재함 DeleteThreadFromReadyQueue %d \n",nThread);
                     if(pCurrentThread->status != THREAD_STATUS_ZOMBIE){
                         if(DEBUGGING) printf("현재 프로세스가 좀비가 아님(exit을 하지 않음)\n");
                         
@@ -60,7 +60,10 @@ void schedule(int signum){
                         if(DEBUGGING)   printf("좀비인데 비 정상적인 루트임 수정 요망\n");
                         
                     }
-                }  
+                }
+                else{
+                    kill(pCurrentThread->pid,SIGCONT);
+                }
             }
            
         }
