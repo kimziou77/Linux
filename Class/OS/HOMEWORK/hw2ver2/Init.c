@@ -44,7 +44,7 @@ void signalHandler(int signum, siginfo_t *info, void *context){
     if(DEBUGGING)   printf("[+] signalHandler %d child %d\n",signum, info->si_pid);
     if(pCurrentThread!=NULL)
     {
-        printf("SignalHandler : pCurrentThread - %d \n", pCurrentThread->pid);
+        if(DEBUGGING) printf("SignalHandler : pCurrentThread - %d \n", pCurrentThread->pid);
          kill(pCurrentThread->pid,SIGSTOP);
 
 
