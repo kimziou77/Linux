@@ -127,7 +127,7 @@ thread_t thread_self()
     if(DEBUGGING) printf("[+] thread_self\n");
     int pid= getpid();
     for(int i=0;i < MAX_THREAD_NUM;i++){
-        if(pThreadTbEnt[i].pThread->pid==pid){
+        if(pThreadTbEnt[i].pThread!=NULL && pThreadTbEnt[i].pThread->pid==pid){
             if(DEBUGGING) printf("[-] thread_self\n");
             return i;// thread ID
         }
