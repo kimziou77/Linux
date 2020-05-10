@@ -10,7 +10,7 @@ int RunScheduler( void )
 void    __ContextSwitch(int curpid, int newpid){//인자를 pid 라고 가정
     if(DEBUGGING) printf("[+] ContextSwtich\n");
     if(DEBUGGING) printf("%d -> %d\n",curpid,newpid);
-
+    if(DEBUGGING)   print_all();
     if(curpid)    kill(curpid,SIGSTOP);//0이 아니면 실행
     if(newpid)    kill(newpid,SIGCONT);
     
@@ -66,8 +66,11 @@ void schedule(int signum){
         }
         else{
             if(DEBUGGING) printf("ReadyQueue empty\n");
+            if(DEBUGGING) print_all();
+
+             kill(pCurrentThread->pid,SIGCONT);
         }
         alarm(TIMESLICE);
-        if(DEBUGGING)   print_all();
+        
         if(DEBUGGING)   printf("[-] schedule\n");
 }

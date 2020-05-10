@@ -1,7 +1,9 @@
 #include "Headers.h"
 
 void InsertThreadToReadyQueue(Thread *pThread){
-	
+
+	if(pThread->status == THREAD_STATUS_READY) return;
+
 	int priority = pThread->priority;
     //Thread -> Ready Tail로 넣어줘야함
     // printf("InsertThreadToReadyQueue %d (%d)\n",pThread->pid,pThread->priority);
@@ -16,7 +18,6 @@ void InsertThreadToReadyQueue(Thread *pThread){
 		pReadyQueueEnt[priority].queueCount = 1;
 	}
 	else {
-
 		pReadyQueueEnt[priority].pTail->phNext = pThread;
 		pThread->phPrev = pReadyQueueEnt[priority].pTail;
 		pReadyQueueEnt[priority].pTail = pThread;

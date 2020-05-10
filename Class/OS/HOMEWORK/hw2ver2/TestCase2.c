@@ -28,9 +28,9 @@ void TestCase2(void)
 	printf("<suspend start>\n");
 	for (i = 0; i < TOTAL_THREAD_NUM;i++)
 	{	
-		printf("[=]sleep2before\n");
+		if(DEBUGGING) printf("[=]sleep2before\n");
 		sleep(2);
-		printf("[=]sleep2after\n");
+		if(DEBUGGING) printf("[=]sleep2after\n");
 		// print_all();
 
 		if (thread_suspend(tid[i]) == -1)
@@ -38,7 +38,7 @@ void TestCase2(void)
 			printf("TestCase2: Thread suspending Failed..\n");
 			assert(0);
 		}
-		print_all();
+		if(DEBUGGING) print_all();
 		printf("suspend succeess\n\n");
 		Thread *temp = pWaitingQueueHead;
 

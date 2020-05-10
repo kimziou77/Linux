@@ -6,7 +6,7 @@
 
 
 int main(int argc, char* argv[]){
-	mainPid = getpid();
+	
 	
 	int TcNum;
 	thread_t tid1, tid2, tid3, tid4, tid5;

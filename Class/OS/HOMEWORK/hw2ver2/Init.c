@@ -47,7 +47,6 @@ void signalHandler(int signum, siginfo_t *info, void *context){
     {
         if(DEBUGGING) printf("SignalHandler : pCurrentThread - %d \n", pCurrentThread->pid);
          kill(pCurrentThread->pid,SIGSTOP);
-
     }   
     
     
@@ -55,7 +54,6 @@ void signalHandler(int signum, siginfo_t *info, void *context){
 
     if(signum == SIGALRM){//스케줄러 실행
         if(DEBUGGING)   printf("[@] SIGALRM %d \n",getpid());
-
         schedule(signum);
     }
     else if(signum==SIGCHLD){//pid가 exit하고, 부모스레드가 해당 pid를 리핑해줌.

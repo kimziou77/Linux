@@ -28,8 +28,8 @@ int thread_create(thread_t * thread, thread_attr_t *attr, int priority, void *(*
     else if(childThread->priority >= pCurrentThread->priority){
         if(DEBUGGING) printf("현재 스레드가 더 우선순위가 높거나 같음\n");
         if(DEBUGGING) printf("따라서 새로운 스레드는 레디큐에 들어감\n");
-        childThread->status=THREAD_STATUS_READY;//Set child Thread status to Ready
         InsertThreadToReadyQueue(childThread);//Move TCB to ready queue
+        childThread->status=THREAD_STATUS_READY;//Set child Thread status to Ready
     }
     else{
         if(DEBUGGING) printf("새로운 스레드의 우선순위가 더 높음 바로 컨텍스트 스위칭\n");
@@ -99,6 +99,7 @@ int thread_cancel(thread_t tid)//해당 스레드를 terminate 시키는 함수
 int thread_resume(thread_t tid)
 {
     if(DEBUGGING)   printf("[+] thread_resume\n");
+    // printf("[+] thread_start\n");
     Thread* targetThread = pThreadTbEnt[tid].pThread;
 
      if(targetThread->priority < pCurrentThread->priority){//resume대상이 더 우선순위가 높으면
@@ -109,10 +110,14 @@ int thread_resume(thread_t tid)
         kill(mainPid,SIGALRM);//둘 다 레디큐에 넣고 메인에게 컨텍스트요청
     }
     else{
-        targetThread->status =THREAD_STATUS_READY;
+
         WaitingQueue_To_ReadyQueue(targetThread);
+        // targetThread->status =THREAD_STATUS_READY;
     }
 
+    // print_all();
+
+    // printf("[-] thread_resume\n");
     if(DEBUGGING)   printf("[-] thread_resume\n");
     return SUCCESS;
 }
