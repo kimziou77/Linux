@@ -8,14 +8,11 @@
 #define FS_DISK_CAPACITY		(BLOCK_SIZE*512) 	/* 수정 */
 #define MAX_FD_ENTRY_MAX		(64)
 
-
 #define NUM_OF_INODE_PER_BLOCK	(BLOCK_SIZE / sizeof(Inode))	/* block 당 inode 개수 */
 #define NUM_OF_DIRENT_PER_BLOCK	(BLOCK_SIZE / sizeof(DirEntry)) /* block 당 directory entry 개수 */
 
-
 #define NUM_OF_DIRECT_BLOCK_PTR	(5)	/* direct block pointer의 개수 */
 #define MAX_NAME_LEN     	(12)
-
 
 #define FILESYS_INFO_BLOCK    (0) /* file system info block no. */
 #define INODE_BYTEMAP_BLOCK_NUM  (1) /* inode bytemap block no. */
@@ -23,9 +20,7 @@
 #define INODELIST_BLOCK_FIRST   (3) /* the first block no. of inode list */
 #define INODELIST_BLOCKS        (4) /* the number of blocks in inode list */
 
-
 // ----------------------------------------------------------
-
 
 typedef enum __fileType {
     FILE_TYPE_FILE,
@@ -33,12 +28,10 @@ typedef enum __fileType {
     FILE_TYPE_DEV
 } FileType;
 
-
 typedef struct  __dirEntry {
      char name[MAX_NAME_LEN];        // file name
      int inodeNum; 
 } DirEntry;
-
 
 /* 추가 */
 typedef struct __dirEntryInfo {
@@ -46,8 +39,6 @@ typedef struct __dirEntryInfo {
     int inodeNum;
     FileType type;
 } DirEntryInfo; 
-
-
 
 typedef struct _FileSysInfo {
     int blocks;              // 디스크에 저장된 전체 블록 개수
@@ -62,8 +53,6 @@ typedef struct _FileSysInfo {
     int dataRegionBlock;		// data region의 시작 블록 번호 (수정)
 } FileSysInfo;
 
-
-
 typedef struct _Inode {
 	int allocBlocks;
 	int size;
@@ -75,7 +64,6 @@ typedef struct __File {
 	int fileOffset;
 	int inodeNum;
 }File;
-
 
 typedef struct __FileDesc {
 	int bUsed;
