@@ -70,7 +70,6 @@ typedef struct __FileDesc {
 	File* pOpenFile;
 }FileDesc;
 
-
 FileDesc fileDesc[MAX_FD_ENTRY_MAX];
 
 int		CreateFile(const char* szFileName);
