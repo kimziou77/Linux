@@ -61,7 +61,7 @@ int		CreateFile(const char* szFileName)
 int		OpenFile(const char* szFileName)
 {
     //CreateFile : 파일을 생성 , fd
-    int nInodeNum = pathFinder_n(szFileName);//해당 파일의 Block획득
+    int nInodeNum = pathFinder_n(szFileName);//해당 파일의 Inode획득
     if(nInodeNum == -1) return FAILED;
     //TODO: 파일 이름이 이미 있으면 -1 리턴
 
@@ -236,12 +236,11 @@ int		MakeDir(const char* szDirName)
 int		RemoveDir(const char* szDirName)
 {
 /*
-- 디렉토리를 제거한다. 단, 리눅스 파일 시스템처럼 빈 디렉토리만 제거가 가능하다.
-- Parameters
- szDirName[in]: 제거할 디렉토리 이름 (절대 경로 사용).
-- Return
-성공하면, 0을 리턴한다. 실패했을때는 -1을 리턴한다. 실패 원인으로, (1) 디렉토리에
-파일 또는 하위 디렉토리가 존할 경우, (2) 제거하고자 하는 디렉토리가 없을 경우.
+    디렉토리를 제거한다. 단, 리눅스 파일 시스템처럼 빈 디렉토리만 제거가 가능하다.
+    성공하면, 0을 리턴한다. 실패했을때는 -1을 리턴한다.
+    실패 원인
+    (1) 디렉토리에 파일 또는 하위 디렉토리가 존할 경우,
+    (2) 제거하고자 하는 디렉토리가 없을 경우.
 */
 }
 
@@ -325,7 +324,6 @@ void	CreateFileSystem()
 
 void	OpenFileSystem()
 {
-
     //mount 작업
     //가상디스크라는 파일을 open하는 동작만 수행한다.
 }
@@ -335,8 +333,20 @@ void	CloseFileSystem()
     //가상디스크 파일을 close한다.
 }
 int		GetFileStatus(const char* szPathName, FileStatus* pStatus){
-    //해당 path가 지정하는 inode를 찾아서
     /*stat 함수와 동일한 동작을 한다.*/
-    /*성공시 0 실패시 -1 : path가 지정하는 file이 없을 때*/
+    int nInodeNum = pathFinder_n(szPathName);//해당 파일의 inode획득
+    if(nInodeNum == -1) return FAILED;//해당 path를 찾지 못했다면 failed
 
+    //해당 path가 지정하는 inode를 찾아서
+    Inode* pInode = (Inode *)malloc(sizeof(Inode));
+    GetInode(nInodeNum,pInode);
+
+    //Status초기화
+    pStatus->allocBlocks = pInode->allocBlocks;
+    for(int i=0; i<NUM_OF_DIRECT_BLOCK_PTR; i++){
+        pStatus->dirBlockPtr[i] = pInode->dirBlockPtr[i];
+    }
+    pStatus->size = pInode->size;
+    pStatus->type = pInode->type; //TODO: regular 파일은 뭐지?
+    return SUCCESS;
 }

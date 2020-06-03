@@ -63,9 +63,9 @@ int pathFinder_n(const char * szFileName){
 		ptr = strtok(NULL, "/");                        // 다음 ptr
 	}
     free(pBuf);
-
     return ptrInodeNum;
 }
+
 int FindFileDescripterTable(){
     for(int i=0; i<MAX_FD_ENTRY_MAX; i++){
         if(pFileDesc[i].bUsed==FALSE){

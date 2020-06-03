@@ -22,6 +22,7 @@ int WhereNewDirOrder(DirEntry * direntry,char * szDirName);
 int FindDirTable(DirEntry * direntry, char * targetName);
 int FindFileDescripterTable();
 int pathFinder(const char * szFileName);
+int pathFinder_n(const char * szFileName);
 int FindOffsetBlock(int legnth);
 /*
 /static으로 숫자를 세어주고 num-of-dirent-per-block 보다 커지면.. 다시0으로
