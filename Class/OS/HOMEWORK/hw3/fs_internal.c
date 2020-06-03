@@ -2,14 +2,37 @@
 #include <stdlib.h>
 #include "disk.h"
 #include "fs.h"
+#include "Headers.h"
+void FileSysInit(){
+    if(DEBUGGING) printf("[+] FileSysInit\n");
+
+    /*********FileDescripter 초기화*********/
+    for(int i=0; i<MAX_FD_ENTRY_MAX; i++){
+        pFileDesc[i].bUsed = FALSE;
+        pFileDesc[i].pOpenFile=NULL;
+    }
+    /***********Disk 초기화************/
+    //(1) Block 크기의 메모리 할당하고 0으로 채운다
+    char * pBuf = (char*)malloc(BLOCK_SIZE);
+    memset(pBuf,0,BLOCK_SIZE);
+    //(2) 메모리를 Block 0부터 6까지 저장한다.
+    for(int i=0; i<7; i++)
+        DevWriteBlock(i,pBuf);
+    //fileSysInfo, inodeBytemap, blockBytemap, inodeList를 0으로 초기화    
+    DevWriteBlock(BLOCK_BYTEMAP_BLOCK_NUM,pBuf);
+    for(int i=0; i<7; i++)
+        SetBlockBytemap(i);//0~6번블록 사용중으로 표시한다.
+    free(pBuf);//내 기준 ..write를 해주었으니 임시로 만든 Buf는 지워준다..
+    if(DEBUGGING) printf("[-] FileSysInit\n");
+}
 
 void SetInodeBytemap(int inodeno)
 {
     char *pBuf = (char *)malloc(BLOCK_SIZE);
-    DevReadBlock(INODE_BYTEMAP_BLOCK_NUM,pBuf);
+    DevReadBlock(1,pBuf);
     pBuf[inodeno]=1;
     //pFileSysInfo->numAllocInodes++;
-    DevWriteBlock(INODE_BYTEMAP_BLOCK_NUM,pBuf);
+    DevWriteBlock(1,pBuf);
     free(pBuf);
 }
 
@@ -43,67 +66,63 @@ void ResetBlockBytemap(int blkno)
     free(pBuf);
 }
 
-
 void PutInode(int inodeno, Inode* pInode)
 {
     char *pBuf = (char *)malloc(BLOCK_SIZE);
     int blkno = WhereIsInodeBlock(inodeno);
     int order = WhereIsInodeOrder(inodeno);
-    DevReadBlock(blkno,pBuf);
+    DevReadBlock(blkno,pBuf);//원본데이터를 읽어들인다.
 
-    Inode ** Buf = (Inode **)pBuf;
-    Buf[order] = pInode;
-    //TODO: 복사를 해야하는데 대입을 해버리면 되나..? 안될거같은데
-    //깊은복사를 해주어야 할 듯...
+    Inode * Buf = (Inode *)pBuf;//pBuf는 현재 Inode[0] 주소를 지님
+    Buf[order] = *pInode;
+    
+    DevWriteBlock(blkno,pBuf);
 
     free(pBuf);
 }
-
 
 void GetInode(int inodeno, Inode* pInode)
 {
+    /*inodeno을 디스크에서 읽어 pInode에 저장한다 : Write필요 x*/
     char *pBuf = (char *)malloc(BLOCK_SIZE);
     int blkno = WhereIsInodeBlock(inodeno);
     int order = WhereIsInodeOrder(inodeno);
-    DevReadBlock(blkno,pBuf);
-    Inode ** Buf = (Inode **)pBuf;//Inode* 의 주소를 가지고 있다.
-    pInode = Buf[order];//인덱스로 접근하면 Inode *가 나온다.
-    //TODO: 복사를 해야하는데 대입을 해버리면 되나..? 안될거같은데
-    //깊은복사를 해주어야 할 듯...
+    DevReadBlock(blkno,pBuf); //inode가 존재하는 블럭을 Read한다.
+
+    Inode * Buf = (Inode *)pBuf;//Inode크기만큼 증가한다.
+    *pInode = Buf[order];
 
     free(pBuf);
-    //pBuf를 free를 안하게 되면 남은 공간들은 접근할 수 없어서 메모리 낭비 아닌가?
 }
-
 
 int GetFreeInodeNum(void)
 {
-    char *pBuf = (char *)malloc(BLOCK_SIZE);
-    DevReadBlock(INODE_BYTEMAP_BLOCK_NUM,pBuf);
+    char * pBuf = (char *)malloc(BLOCK_SIZE);
+    DevReadBlock(1,pBuf); //InodeBytemap Block (1)
     for(int i=0; i<BLOCK_SIZE;i++){
-        if(pBuf[i]==1){
+        if(pBuf[i]==0){
             free(pBuf);
             return i;
         }
     }
 }
-
 
 int GetFreeBlockNum(void)
 {
     char *pBuf = (char *)malloc(BLOCK_SIZE);
     DevReadBlock(BLOCK_BYTEMAP_BLOCK_NUM,pBuf);
-    for(int i=7; i<BLOCK_SIZE;i++){//7번부터 DataRegion이므로, 7번부터 탐색
-        if(pBuf[i]==1){
+    for(int i=7; i<BLOCK_SIZE; i++){//7번부터 DataRegion이므로, 7번부터 탐색
+        if(pBuf[i]==0){
             free(pBuf);
             return i;
         }
     }
 }
-
 int WhereIsInodeBlock(int inodeno){
+    /*해당 inode가 몇 번째 블록에 있는지 반환*/
     return inodeno / NUM_OF_INODE_PER_BLOCK;
 }
 int WhereIsInodeOrder(int inodeno){
+    /*해당 inode가 몇 번째 순서에 있는지 반환*/
     return inodeno % NUM_OF_INODE_PER_BLOCK;
 }
