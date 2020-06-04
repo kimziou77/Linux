@@ -27,6 +27,18 @@ int main(){
 	}
 	printf("fileSize: %d , file Blocks: %d, 1st block ptr: %d\n",
 			status.size, status.allocBlocks, status.dirBlockPtr[0]) ;
+	 int i;
+	 int count;
+	 
+	DirEntryInfo pDirEntryInfo[20];
+	if ((count = EnumeratreDirStatus("/usr/home/kim", pDirEntryInfo, 20)) <	0){
+		exit(0); // program terminated due to the error return of the function.
+	}
+	for (i = 0;i < count;i++){
+			printf("directory entry:%s, type:%d, inode number:%d\n ",
+			pDirEntryInfo[i].name, pDirEntryInfo[i].type,	pDirEntryInfo[i].inodeNum);
+	}
+
 
 	// DevCreateDisk();
 	// int blknum, inodenum;

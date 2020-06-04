@@ -333,16 +333,50 @@ int		RemoveDir(const char* szDirName)
 
 int   EnumerateDirStatus(const char* szDirName, DirEntryInfo* pDirEntry, int dirEntrys)
 {
-    //tmp - 1 a 2 b 3 c
+    /*해당 디렉토리를 구성하고 있는 디렉토리 엔트리들의 묶음을 리턴*/
+
+    //DirectoryInfo a[40]; 이런게 2번째로 들어올 수 있음. 최대 크기를 dirEntry로
+    //심지어 파일인데 DirectoryInfo가능한가? ㅇㅇ 이건 
+    //openDir, ReadDir 이런거를 enum으로 선언하겠다는 뜻임.???
+
+    /*디렉토리 이름이 없을 경우*/
+    int nInodeNum = pathFinder_n(szDirName);
+    if(nInodeNum == -1) return FAILED;
+
+    char * pBuf = (char*)malloc(BLOCK_SIZE);
+    Inode * nInode = (Inode *)malloc(sizeof(Inode));
+    GetInode(nInodeNum,nInode);
+    DevReadBlock(nInode->dirBlockPtr[0],pBuf);//Block 가져오기
+
+    /*디렉토리가 아닐 경우*/
+    if(nInode->type != FILE_TYPE_DIR) {
+        free(pBuf);
+        free(nInode);
+        return FAILED;
+    }
+    //TODO: 근데 directory당  5개만 들어갈 수 있었던거 아닌가?
+    for(int i=0; i<dirEntrys; i++){
+        DirEntryInfo a;
+        *(pDirEntry+i) = a;
+        //return;
+    }
+    
+    /*
+    Parameters
+        szDirName[in]: 디렉토리 이름 (절대 경로 사용).
+        pDirEntry[out]: 디렉토리 엔터리들을 저장할 메모리 주소
+        dirEntries[in]: 읽을 디렉토리 엔터리의 개수
+
+        디렉토리 엔터리 개수가 40이지만, dirEntries가 60으로 입력했을 때,
+        리턴되는 값은 유효한 디렉토리 엔터리 개수인 40을 리턴해야 한다. 
+
+        전체 디렉토리 엔터리 개수가 40이지만 dirEntry가 20으로 입력되었을 때,
+        리틴되는 값은 20이며, 20개의 디렉토리 엔터리의 내용이 pDirEntry로 리턴되어야 한다
+    */
+    //tmp - 1 a -b 2 b 3 c
     //3개파일에 대한 정보를 a배열에 채워서 리턴하게 됨.
     //반환값은 tmp 디렉토리에 들어있는 갯수만큼을 리턴하면 된다.
     // 3이라는 개수만큼 포문을 돌릴 것임. 
-    for(int i=0; i<dirEntrys ;i++){
-        //출력을 하게 될 것임.
-        //개수만큼 해당하는 배열에서 전부를 읽겠다는 것임.
-    }
-    return dirEntrys;
-    /*  설명이 매우 긺...*/
 }
 
 void	CreateFileSystem()
