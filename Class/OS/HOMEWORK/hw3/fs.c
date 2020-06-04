@@ -13,7 +13,6 @@ int		CreateFile(const char* szFileName)
 
     //생성할파일의 Inode. 디렉토리가 아니므로, 블록은 필요하지 않다.
     int in = GetFreeInodeNum();// FreeInode 1
-
     int nd = WhereNewDirOrder(dirEntry,szFileName);//상위 폴더에 빈칸을 찾아 할당한다.
     if(nd==FAILED) {
         free(pBuf);
@@ -44,39 +43,30 @@ int		CreateFile(const char* szFileName)
     //FileSysInfo 변경
     pFileSysInfo->numAllocInodes++;
     DevWriteBlock(FILESYS_INFO_BLOCK,(char*)pFileSysInfo);
-
     //여기까지 파일을 디렉토리안에 생성함
-    /*************fd생성**************/
-    int nFDnum =FindFileDescripterTable();//(1) FileDescripter의 빈 entry를 찾는다.
-    File * newFile = malloc(sizeof(File));//(2) Malloc으로 File객체를 할당한다.
-    //(3) File객체의 변수들을 설정한다. a.c의 inode번호와 file offset을 설정함.
-    newFile->inodeNum = in;
-    newFile->fileOffset = 0;
-    pFileDesc[nFDnum].bUsed = TRUE;
-    pFileDesc[nFDnum].pOpenFile = newFile;
-    
+
+    /*************open까지 해야됨**************/
+    int nFDnum = OpenFile(szFileName);
     return nFDnum;//return file descriptor
 }
 
 int		OpenFile(const char* szFileName)
 {
-    //CreateFile : 파일을 생성 , fd
     int nInodeNum = pathFinder_n(szFileName);//해당 파일의 Inode획득
-    if(nInodeNum == -1) return FAILED;
-    //TODO: 파일 이름이 이미 있으면 -1 리턴
+    if(nInodeNum == -1) return FAILED;//못찾으면 Failed반환
 
-    // fileDescriptorTable동작은 createfile의 동작과 동일함.
-    //(1) fdTable에서 빈 entry를 찾는다.
     /*************fd생성**************/
-    int nFDnum =FindFileDescripterTable();//(1) FileDescripter의 빈 entry를 찾는다.
-    File * newFile = malloc(sizeof(File));//(2) Malloc으로 File객체를 할당한다.
-    //(3) File객체의 변수들을 설정한다. a.c의 inode번호와 file offset을 설정함.
+    //(1) FileDescripter의 빈 entry를 찾는다.
+    int nFDnum =FindFileDescripterTable();
+    //(2) Malloc으로 File객체를 할당한다.
+    File * newFile = malloc(sizeof(File));
+    //(3) File객체의 변수들을 설정한다. 
     newFile->inodeNum = nInodeNum;
-    newFile->fileOffset = 0;//파일을 젤 처음 오픈한거니까 offset을 0으로 해줘야댐
+    newFile->fileOffset = 0;//file 처음 오픈 ->offset을 0으로 해줘야댐
     pFileDesc[nFDnum].bUsed = TRUE;
     pFileDesc[nFDnum].pOpenFile = newFile;
 
-    return nFDnum;
+    return nFDnum; // fd 반환
 }
 
 int		WriteFile(int fileDesc, char* pBuffer, int length)
@@ -123,7 +113,7 @@ int		WriteFile(int fileDesc, char* pBuffer, int length)
 
 int		ReadFile(int fileDesc, char* pBuffer, int length)
 {
-    //근데 왜 file Offset을 read크기만큼 증가시키지? write는 그렇다 치더라도...
+    //TODO: 근데 왜 file Offset을 read크기만큼 증가시키지? write는 그렇다 치더라도
     /***********작성할 파일정보 불러들이기***********/
     File* file = pFileDesc[fileDesc].pOpenFile;
     int fileInodeNum = file->inodeNum;
@@ -141,7 +131,7 @@ int		ReadFile(int fileDesc, char* pBuffer, int length)
         pBuffer[i] = readBlock[i];
     }
 
-    file->fileOffset +=length;
+    file->fileOffset += length;
 
     return length;
     //TODO: 실패시 -1 리턴.. 실패 조건?
@@ -159,14 +149,54 @@ int		CloseFile(int fileDesc)
 
 int		RemoveFile(const char* szFileName)
 {
-/*
-- 파일을 제거한다. 단, open된 파일을 제거할 수 없다.
-- Parameters
- szFileName[in]: 제거할 파일 이름. 단, 파일 이름은 절대 경로임.
-- Return
-성공하면, 0를 리턴한다. 실패했을때는 -1을 리턴한다. 실패 원인으로 (1) 제거할 파
-일 이름이 없을 경우, (2) 제거될 파일이 open되어 있을 경우.
-*/
+    int pInodeNum = pathFinder(szFileName);     //부모 iNode
+    int nInodeNum = pathFinder_n(szFileName);   //자신의 iNode
+
+    /*제거할 파일 이름이 없을 경우*/
+    if(pInodeNum == -1) return FAILED;
+    if(nInodeNum == -1) return FAILED;
+
+    /*제거될 파일이 Open되어 있을 경우*/
+    for(int i=0; i<MAX_FD_ENTRY_MAX; i++){
+        if(pFileDesc[i].pOpenFile->inodeNum==nInodeNum){
+            return FAILED;
+        }
+    }
+    /*********create file의 반대과정**********/
+    char * pBuf = (char*)malloc(BLOCK_SIZE);
+    Inode * pInode = (Inode *)malloc(sizeof(Inode));
+    GetInode(pInodeNum,pInode);
+    DevReadBlock(pInode->dirBlockPtr[0],pBuf);
+    DirEntry* dirEntry = (DirEntry *)pBuf;//상위 디렉토리를 불러온다.
+
+    char * name = NameFinder(szFileName);
+    int td = FindDirTable(dirEntry,name);//자식 테이블번호 불러오기
+
+    /* 1-1 부모디렉토리 블럭정보 변경 */
+    strcpy(dirEntry[td].name,"");//TODO: 빈 문자열.. 테케때 확인
+    dirEntry[td].inodeNum = NONE;
+
+    /* 1-2 부모디렉토리 Inode정보 변경 */
+    pInode->allocBlocks--;
+    pInode->size=(pInode->allocBlocks)*BLOCK_SIZE;
+    DevWriteBlock(pInode->dirBlockPtr[0],pBuf);//수정정보 디스크에 저장
+    free(pBuf);//쓰고나서 임시 Buf는 삭제...
+
+    //TODO: szName Block이 없다고 확신할 수 있나?
+
+    /* szName Inode 없애기 */
+    GetInode(nInodeNum,pInode);//자기자신의 iNode 불러오기
+    memset(pInode,0,sizeof(Inode));//0으로 다시 셋팅
+    SetInode(nInodeNum,pInode);
+    free(pInode);
+
+    //bytemap 업데이트
+    ResetInodeBytemap(nInodeNum);
+    //FileSysInfo 변경
+    pFileSysInfo->numAllocInodes--;
+    DevWriteBlock(FILESYS_INFO_BLOCK,(char*)pFileSysInfo);
+    
+    return SUCCESS;
 }
 
 int		MakeDir(const char* szDirName)
@@ -235,13 +265,70 @@ int		MakeDir(const char* szDirName)
 
 int		RemoveDir(const char* szDirName)
 {
-/*
-    디렉토리를 제거한다. 단, 리눅스 파일 시스템처럼 빈 디렉토리만 제거가 가능하다.
-    성공하면, 0을 리턴한다. 실패했을때는 -1을 리턴한다.
-    실패 원인
-    (1) 디렉토리에 파일 또는 하위 디렉토리가 존할 경우,
-    (2) 제거하고자 하는 디렉토리가 없을 경우.
-*/
+    if(strcmp("/",szDirName)==0){
+        //root 예외 처리해주고싶은데 지울수있으려나?
+        //하위폴더가 항상 존재하나? 
+    }
+    /*********Make Dir의 반대과정**********/
+    int pInodeNum = pathFinder(szDirName);     //부모 iNode
+    int nInodeNum = pathFinder_n(szDirName);   //자신의 iNode
+
+    /*제거할 디렉토리가 없을 경우*/
+    if(pInodeNum == -1) return FAILED;
+    if(nInodeNum == -1) return FAILED;
+
+    /*지우려는 폴더의 하위 디렉토리가 존재할 경우*/
+    Inode * nInode = (Inode *)malloc(sizeof(Inode));
+    GetInode(nInodeNum,nInode);
+    if(nInode->allocBlocks > 2){
+        //".", ".." 이외에 다른 폴더가 있다면
+        free(nInode);
+        return FAILED;
+    }
+
+    
+    /*Make의 반대과정*/
+    char * pBuf = (char*)malloc(BLOCK_SIZE);
+    Inode * pInode = (Inode *)malloc(sizeof(Inode));
+    GetInode(pInodeNum,pInode);
+    DevReadBlock(pInode->dirBlockPtr[0],pBuf);
+    DirEntry* dirEntry = (DirEntry *)pBuf;//상위 디렉토리를 불러온다.
+
+    char * name = NameFinder(szDirName);
+    int td = FindDirTable(dirEntry,name);//자식 테이블번호 불러오기
+
+    /* 1-1 부모디렉토리 블럭정보 변경 */
+    strcpy(dirEntry[td].name,"");//TODO: 빈 문자열.. 테케때 확인
+    dirEntry[td].inodeNum = NONE;
+    
+    /* 1-2 부모디렉토리 Inode정보 변경 */
+    pInode->allocBlocks--;
+    pInode->size=(pInode->allocBlocks)*BLOCK_SIZE;
+    DevWriteBlock(pInode->dirBlockPtr[0],pBuf);//수정정보 디스크에 저장
+    free(pBuf);//쓰고나서 임시 Buf는 삭제...
+
+    /* Block 없애기 */
+    DevReadBlock(nInode->dirBlockPtr[0],pBuf);
+    memeset(pBuf,0,sizeof(BLOCK_SIZE));
+    DevWriteBlock(nInode->dirBlockPtr[0],pBuf);
+    ResetBlockBytemap(nInode->dirBlockPtr[0]);//bytesMap
+    free(pBuf);
+    
+    /* Inode 없애기 */
+    GetInode(nInodeNum,pInode);//자기자신의 iNode 불러오기
+    memset(pInode,0,sizeof(Inode));//0으로 다시 셋팅
+    SetInode(nInodeNum,pInode);
+    ResetInodeBytemap(nInodeNum);
+    free(pInode);
+    
+    
+    //FileSysInfo 변경
+    pFileSysInfo->numAllocInodes--;
+    pFileSysInfo->numAllocBlocks--;
+    pFileSysInfo->numFreeBlocks++;
+    DevWriteBlock(FILESYS_INFO_BLOCK,(char*)pFileSysInfo);
+    
+    return SUCCESS;
 }
 
 int   EnumerateDirStatus(const char* szDirName, DirEntryInfo* pDirEntry, int dirEntrys)
@@ -262,6 +349,8 @@ void	CreateFileSystem()
 {
     /*가상디스크 생성 format동작*/
     DevCreateDisK();
+    OpenFileSystem();
+    //TODO: 여기서 호출하는건가 메인에서 호출하는건가...이건 테케가 나와봐야 알듯.
     FileSysInit();//(0)디스크 초기화
 
     //(1) Block bytemap의 byte 7부터 검색하여 free block검색 7
@@ -324,14 +413,17 @@ void	CreateFileSystem()
 
 void	OpenFileSystem()
 {
+    DevOpenDisk();
     //mount 작업
     //가상디스크라는 파일을 open하는 동작만 수행한다.
 }
 
 void	CloseFileSystem()
 {
+    DevCloseDisk();
     //가상디스크 파일을 close한다.
 }
+
 int		GetFileStatus(const char* szPathName, FileStatus* pStatus){
     /*stat 함수와 동일한 동작을 한다.*/
     int nInodeNum = pathFinder_n(szPathName);//해당 파일의 inode획득
@@ -347,6 +439,6 @@ int		GetFileStatus(const char* szPathName, FileStatus* pStatus){
         pStatus->dirBlockPtr[i] = pInode->dirBlockPtr[i];
     }
     pStatus->size = pInode->size;
-    pStatus->type = pInode->type; //TODO: regular 파일은 뭐지?
+    pStatus->type = pInode->type;
     return SUCCESS;
 }

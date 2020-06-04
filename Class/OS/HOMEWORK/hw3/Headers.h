@@ -10,9 +10,10 @@
 #include <stdio.h>
 #include "disk.h"
 #include "fs.h"
-#define MODE 0644
-#define BLOCK_NUM 512
-#define DEBUGGING 1
+#define MODE (0644)
+#define BLOCK_NUM (512)
+#define NONE (-15)
+#define DEBUGGING (1)
 enum {FAILED=-1, SUCCESS};
 enum {FALSE=0, TRUE=1};
 enum {PARENT=0, CHILD};
@@ -24,6 +25,7 @@ int FindFileDescripterTable();
 int pathFinder(const char * szFileName);
 int pathFinder_n(const char * szFileName);
 int FindOffsetBlock(int legnth);
+char* NameFinder(const char * szFileName);
 /*
 /static으로 숫자를 세어주고 num-of-dirent-per-block 보다 커지면.. 다시0으로
     //절대경로니까 항상 /로 시작 -> szName

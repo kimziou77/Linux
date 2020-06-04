@@ -1,7 +1,7 @@
 #include "Headers.h"
 
 int pathFinder(const char * szFileName){
-    /*path를 받아 마지막 폴더의 ptrBlock을 반환해주는 함수*/
+    /*szFileName의 마지막경로의 부모에 대한 Inode를 반환*/
     // Root Directory 불러오기
     // 디렉토리를 탐색해 나간다 ex) /dir1/dir2/dir3
     // "/" 기준으로 토크나이징한다.
@@ -39,6 +39,7 @@ int pathFinder(const char * szFileName){
 }
 
 int pathFinder_n(const char * szFileName){
+    /*szFileName의 마지막경로에 대한 Inode를 반환*/
     char * pBuf = (char*)malloc(BLOCK_SIZE);
     Inode * pInode = (Inode *)malloc(sizeof(Inode));
     GetInode(0,pInode);//절대경로 -> 루트부터 시작
@@ -64,6 +65,36 @@ int pathFinder_n(const char * szFileName){
 	}
     free(pBuf);
     return ptrInodeNum;
+}
+char* NameFinder(const char * szFileName){
+    /*szFileName의 마지막경로에 대한 Inode를 반환*/
+    char * pBuf = (char*)malloc(BLOCK_SIZE);
+    Inode * pInode = (Inode *)malloc(sizeof(Inode));
+    GetInode(0,pInode);//절대경로 -> 루트부터 시작
+
+    DirEntry* dirEntry = (DirEntry *)pBuf;
+    int ptrTableIndex;      //ptr에 대한 DirTable인덱스
+    int ptrInodeNum;        //ptr에 대한 inode
+    int ptrBlock;           //ptr블럭
+
+    char parsing[100];//input이 100이 안넘는다고 가정...
+	strcpy(parsing, szFileName);
+    char * name;
+	char* ptr = strtok(parsing, "/");//TODO: 메모리가...어떻게 되려나..
+	while (ptr != NULL)               // 자른 문자열이 나오지 않을 때까지 반복
+	{
+        ptrTableIndex = FindDirTable(dirEntry,ptr);//디렉토리에서 ptr찾기
+        if(ptrTableIndex==FAILED) return FAILED;   //못 찾았으면 failed...
+        ptrInodeNum = dirEntry[ptrTableIndex].inodeNum;
+        GetInode(ptrInodeNum,pInode);                   //inode를 가지고 온다.
+        ptrBlock = pInode -> dirBlockPtr[0];            //ptr의 자신의 블록번호를 가지고 온다.
+        DevReadBlock(ptrBlock,pBuf);                    //ptr블럭을 가지고 온다.
+        dirEntry = (DirEntry *)pBuf;
+        name = ptr;
+		ptr = strtok(NULL, "/");                        // 다음 ptr
+	}
+    free(pBuf);
+    return name;
 }
 
 int FindFileDescripterTable(){
