@@ -36,8 +36,12 @@ TableIndex WhereNewDirOrder(int in);
 TableIndex FindDirTable(int in, const char * targetName);
 int AllocNewBlock(int inode);
 PathInfo PathFinder(const char * szFileName);
-
+int UsingInode(int in);
+int UsingBlock(int bn);
+int IsEmptyDir(int in);
 void print_pSysInfo();
 void printDirEntry(int in);
 void DirEntryInit(DirEntry * direntry);
 void BlockInit(char * pBuf);
+
+int FindDescriptorTable();

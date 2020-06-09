@@ -46,7 +46,7 @@ void ListDirContents(const char* dirName)
 	Inode pInode;
 	
 	count = EnumerateDirStatus(dirName, pDirEntry, DIR_NUM_MAX);
-	printf("count : %d \n",count);
+	// printf("count : %d \n",count);
 	printf("[%s]Sub-directory:\n", dirName);
 	
 	for (i = 0; i < count; i++)
@@ -98,7 +98,7 @@ void TestCase1(void)
 		MakeDir(dirName);
 	}
 	ListDirContents("/home");
-	system("clear");
+	// system("clear");
 	ListDirContents("/etc");
 
 	/* remove subdirectory of etc directory */
@@ -108,6 +108,10 @@ void TestCase1(void)
 		sprintf(dirName, "/etc/dev%d", i);
 		RemoveDir(dirName);
 	}
+	// char * pBuf = (char *)malloc(BLOCK_SIZE);
+	// DevReadBlock(10,pBuf);
+	// DirEntry * direntry = (DirEntry *)pBuf;
+	// printDirEntry(direntry[0].inodeNum);
 
 	ListDirContents("/etc");
 
@@ -133,12 +137,20 @@ void TestCase2(void)
 	MakeDir(fileName);
 
 	ListDirContents("/dir");
+
+	system("clear");
+
 	for (i = 0; i < 15; i++) {
 		sprintf(fileName, "%s/dir%d",fileName,i);
 		memset(paths[i], 0, FILENAME_MAX_LEN);
 		sprintf(paths[i], "%s", fileName);
 		MakeDir(fileName);
 	}
+	// char * pBuf = (char *)malloc(BLOCK_SIZE);
+	// DevReadBlock(23,pBuf);
+	// DirEntry * direntry = (DirEntry *)pBuf;
+	// printDirEntry(direntry[0].inodeNum);
+	// sleep(1000);
 
 	for (i = 0; i < 4; i++) {
 		sprintf(tempName, "%s", fileName);

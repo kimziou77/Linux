@@ -18,9 +18,9 @@ int main(){
 
 
 	char * pBuf = (char *)malloc(BLOCK_SIZE);
-	DevReadBlock(9,pBuf);
+	DevReadBlock(10,pBuf);
 	DirEntry * direntry = (DirEntry *)pBuf;
-	// printDirEntry(direntry[0].inodeNum);
+	printDirEntry(direntry[0].inodeNum);
 
 	if(DEBUGGING) printf("[-] Main \n");
 	return 0;
