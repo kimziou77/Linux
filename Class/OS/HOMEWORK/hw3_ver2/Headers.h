@@ -26,7 +26,7 @@ typedef struct _PathInfo{
 #define MODE (0644)
 #define BLOCK_NUM (512)
 #define NONE (-15)
-#define DEBUGGING (0)
+#define DEBUGGING (1)
 enum {FAILED=-1, SUCCESS};
 enum {FALSE=0, TRUE=1};
 enum {PARENT=0, CHILD};

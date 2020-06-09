@@ -2,7 +2,7 @@
 #include "Headers.h"
 int CreateFile(const char *szFileName) {
     if (DEBUGGING) printf("[+] CreateFile\n");
-    
+    /***File Inode 할당***/
     PathInfo pi = PathFinder(szFileName);
     TableIndex Ti = FindDirTable(pi.pInodeNum, "no-entry");
 
@@ -32,12 +32,8 @@ int CreateFile(const char *szFileName) {
 
     // bytemap 업데이트
     SetInodeBytemap(in); //새로 할당해준 inode
-    int nfd = FindDescriptorTable();
-    File * file = (File *)malloc(sizeof(File));
-    file->fileOffset = 0;
-    file->inodeNum = in;
-    pFileDesc[nfd].pOpenFile = file;
 
+    int nfd = OpenFile(szFileName);//fd반환받기
     // FileSysInfo 변경
     pFileSysInfo->numAllocInodes++;
     DevWriteBlock(FILESYS_INFO_BLOCK, (char *)pFileSysInfo);
@@ -46,38 +42,155 @@ int CreateFile(const char *szFileName) {
     return nfd;
 }
 
-int OpenFile(const char *szFileName) {}
-
-int WriteFile(int fileDesc, char *pBuffer, int length) {
-    //Block 단위로 읽고 쓰나보다???
-    /*파일 불러오기*/
-    File * file = pFileDesc[fileDesc].pOpenFile;
-    Inode * pInode = (Inode *)malloc(sizeof(Inode));
-    GetInode(file->inodeNum,pInode);
-    
-    /*inode에 할당한 블록 설정해주기*/
-    int bn = GetFreeBlockNum();
-    int ptrNum = file->fileOffset/BLOCK_SIZE;
-    pInode->dirBlockPtr[ptrNum] = bn;
-    file->fileOffset += BLOCK_SIZE;
-    PutInode(file->inodeNum,pInode);
-    
-    /*데이터 복사*/
-    char * pBuf = (char *)malloc(BLOCK_SIZE);
-    DevReadBlock(bn,pBuf);
-    for(int i=0; i<BLOCK_SIZE; i++){
-        pBuf[i] = pBuffer[i];
-    }
-    DevWriteBlock(bn,pBuf);
-    free(pBuf);
+int OpenFile(const char *szFileName) {
+    if(DEBUGGING) printf("[+] OpenFile\n");
+    /***FileDescriptor 할당***/
+    PathInfo pi = PathFinder(szFileName);//자신의 inode를 가져옴.
+    //해당 이름이 있으면 그냥 열어주기만 하면 되나?
+    int nfd = FindDescriptorTable();
+    //파일이 없다면 만들어서 할당해주기
+    File * file = (File *)malloc(sizeof(File));
+    file->fileOffset = 0;//처음 open 했다면 항상 0으로
+    file->inodeNum = pi.pInodeNum;
+    pFileDesc[nfd].bUsed = TRUE;
+    pFileDesc[nfd].pOpenFile = file;
+    if(DEBUGGING) printf("[-] OpenFile %d\n",nfd);
+    return nfd;
 }
 
-int ReadFile(int fileDesc, char *pBuffer, int length) {}
+int WriteFile(int fileDesc, char *pBuffer, int length) {
+    if(DEBUGGING) printf("[+] WriteFile %d\n",fileDesc);
+    //Block 단위로 읽고 쓰나보다???
+    /*파일 불러오기*/
 
-int CloseFile(int fileDesc) {}
+    File * file = pFileDesc[fileDesc].pOpenFile;
+    Inode * pInode = (Inode *)malloc(sizeof(Inode));
+    char * pBuf = (char *)malloc(BLOCK_SIZE);
+
+    int rbPtr = file->fileOffset/BLOCK_SIZE;//readBlock Ptr
+    // printf("%d ) offset에 따르면 %d 번째 블록부터 읽으세요\n",file->fileOffset,rbPtr);
+    GetInode(file->inodeNum,pInode);
+    int num=0;
+    if(pInode->allocBlocks <= rbPtr){
+        int bnn = GetFreeBlockNum();
+        SetBlockBytemap(bnn);
+        pInode->dirBlockPtr[pInode->allocBlocks]= bnn;
+        pInode->allocBlocks++;
+        pFileSysInfo->numAllocBlocks++;
+        pFileSysInfo->numFreeBlocks--;
+        memset(pBuf,0,BLOCK_SIZE);
+        DevWriteBlock(pInode->dirBlockPtr[rbPtr],pBuf);
+    }
+    //해당위치부터 할당된 블록까지
+    for(int i=rbPtr; i < NUM_OF_DIRECT_BLOCK_PTR; i++){//5개까지 할당 가능
+        memset(pBuf,0,BLOCK_SIZE);
+        DevReadBlock(pInode->dirBlockPtr[i],pBuf);
+        for(int j=0; j<BLOCK_SIZE; j++){
+            if(num>=length) {
+                PutInode(file->inodeNum,pInode);
+                DevWriteBlock(pInode->dirBlockPtr[i],pBuf);
+                DevWriteBlock(FILESYS_INFO_BLOCK,(char *)pFileSysInfo);
+                file->fileOffset += length;//읽은 크기만큼..
+                // printf("alloc %d %d\n",pInode->allocBlocks,num);
+                // printf("[-] @WriteFile\n\n");
+                // free(pInode);
+                // free(pBuf);
+                return length;
+            }
+            pBuf[j] = pBuffer[j];
+            // printf("%c",pBuf[j]);
+            num++;
+        }
+        DevWriteBlock(pInode->dirBlockPtr[i],pBuf);
+        /*inode에 할당한 블록 설정해주기*/
+        int bn = GetFreeBlockNum();
+        SetBlockBytemap(bn);
+        pInode->dirBlockPtr[pInode->allocBlocks]= bn;
+        pInode->allocBlocks++;
+        pFileSysInfo->numAllocBlocks++;
+        pFileSysInfo->numFreeBlocks--;
+    }
+
+    PutInode(file->inodeNum,pInode);
+    DevWriteBlock(FILESYS_INFO_BLOCK,pBuf);
+
+    // free(pBuf);
+    // free(pInode);
+    return num;
+}
+
+int ReadFile(int fileDesc, char *pBuffer, int length) {
+    if(DEBUGGING) printf("[+] ReadFile index : %d\n",fileDesc);
+    File * file = pFileDesc[fileDesc].pOpenFile;
+    Inode * pInode = (Inode *)malloc(sizeof(Inode));
+    char * pBuf = (char *)malloc(BLOCK_SIZE);
+
+    int rbPtr = file->fileOffset/BLOCK_SIZE;//readBlock Ptr
+    GetInode(file->inodeNum,pInode);
+    // printf("inode : %d ",file->inodeNum);
+
+    int num=0;
+
+    //해당위치부터 할당된 블록까지
+    for(int i=rbPtr; i < pInode->allocBlocks; i++){
+        DevReadBlock(pInode->dirBlockPtr[i],pBuf);
+        for(int j=0; j<BLOCK_SIZE; j++){
+            if(num>length) {
+                // free(pInode);
+                // free(pBuf);
+                return length;
+            }
+            pBuffer[j] = pBuf[j];
+            // printf("%c",pBuffer[j]);
+            num++;
+        }
+    }
+    free(pInode);
+    free(pBuf);
+    printf("[-] ReadFile\n");
+    return num;
+}
+
+int CloseFile(int fileDesc) {
+    if(DEBUGGING) printf("[+] Close file\n");
+    pFileDesc[fileDesc].pOpenFile->inodeNum=NULL;
+    pFileDesc[fileDesc].bUsed=FALSE;
+    if(DEBUGGING) printf("[-] Close file\n");
+}
 
 int RemoveFile(const char *szFileName) {
+    if(DEBUGGING) printf("[+] Remove File\n");
+    PathInfo pi = PathFinder(szFileName);//자신의 inode를 가져옴.
+    for(int i=0; i<MAX_FD_ENTRY_MAX; i++){
+        if(pFileDesc[i].bUsed==TRUE &&pFileDesc[i].pOpenFile->inodeNum == pi.pInodeNum)
+            return FAILED;//open되어 있다면 Failed
+    }
+    //open되어있지 않고 비어있는 파일이라면
+    Inode * pInode = (Inode *)malloc(sizeof(Inode));
+    GetInode(pi.pInodeNum,pInode);
+    
+    if(pInode->size!=0){
+        //내용물이 있었다면 블록 모두 삭제하기
+        char * pBuf = (char *)malloc(BLOCK_SIZE);
+        for(int i=0; i<pInode->allocBlocks;i++){
+            DevReadBlock(pInode->dirBlockPtr[i],pBuf);
+            memset(pBuf,0,BLOCK_SIZE);
+            DevWriteBlock(pInode->dirBlockPtr[i],pBuf);
+            ResetBlockBytemap(pInode->dirBlockPtr[i]);
+            pFileSysInfo->numAllocBlocks--;
+            pFileSysInfo->numFreeBlocks++;
+        }
+    }
+    pInode->allocBlocks =0;
+    pInode->size = 0;
+    pInode->type=FILE_TYPE_DEV;
 
+    pFileSysInfo->numAllocInodes--;
+    ResetInodeBytemap(pi.pInodeNum);
+    PutInode(pi.pInodeNum,pInode);
+    DevWriteBlock(FILESYS_INFO_BLOCK,(char*)pFileSysInfo);
+    if(DEBUGGING) printf("[-] Remove File\n");
+    return SUCCESS;
 }
 
 int MakeDir(const char *szDirName) {

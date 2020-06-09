@@ -124,6 +124,7 @@ void TestCase1(void)
 
 void TestCase2(void)
 {
+	printf(" ---- Test Case 2 ----\n");
 	int i;
 	char fileName[FILENAME_MAX_LEN];
 	char tempName[FILENAME_MAX_LEN];
@@ -138,7 +139,7 @@ void TestCase2(void)
 
 	ListDirContents("/dir");
 
-	system("clear");
+	// system("clear");
 
 	for (i = 0; i < 15; i++) {
 		sprintf(fileName, "%s/dir%d",fileName,i);
@@ -159,7 +160,6 @@ void TestCase2(void)
 	}
 
 	ListDirContents(fileName);
-
 	for (i = 0; i < 4; i++) {
 		sprintf(tempName, "%s", fileName);
 		sprintf(tempName, "%s/%d.txt", tempName, i);
@@ -174,6 +174,7 @@ void TestCase2(void)
 }
 
 void TestCase3(void) {
+	printf(" ---- Test Case 3 ----\n");
 	int i, j, k;
 	char alphabet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$^&*()_";
 	char fileName[FILENAME_MAX_LEN];
@@ -181,7 +182,7 @@ void TestCase3(void) {
 	char* pBuffer2 = (char*)malloc(BLOCK_SIZE);
 	int cIndex = 0;
 	int fd[4] = { 0, };
-
+	MakeDir("/home");
 	MakeDir("/home/test");
 	for (i = 0; i < 4; i++)
 	{
@@ -198,6 +199,7 @@ void TestCase3(void) {
 			memset(str, 0, BLOCK_SIZE);
 			for (k = 0; k < BLOCK_SIZE; k++)
 				str[k] = alphabet[cIndex];
+			// printf("fd %d , %d번째 블럭\n",fd[j],i);
 			WriteFile(fd[j], str, BLOCK_SIZE);
 			cIndex++;
 			free(str);
@@ -206,7 +208,6 @@ void TestCase3(void) {
 
 	for (i = 0; i < 4; i++)
 		CloseFile(fd[i]);
-
 
 	for (i = 0; i < 4; i++)
 	{
@@ -217,6 +218,11 @@ void TestCase3(void) {
 
 	cIndex = 0;
 
+	// char * pBuf = (char *)malloc(BLOCK_SIZE);
+	// DevReadBlock(9,pBuf);
+	// DirEntry * direntry = (DirEntry *)pBuf;
+	// printDirEntry(direntry[0].inodeNum);
+
 	for (i = 0; i < 5; i++)
 	{
 		for (j = 0; j < 4; j++)
@@ -226,6 +232,12 @@ void TestCase3(void) {
 				pBuffer1[k] = alphabet[cIndex];
 			memset(pBuffer2, 0, BLOCK_SIZE);
 			ReadFile(fd[j], pBuffer2, BLOCK_SIZE);
+			if(DEBUGGING){
+				for(int a=0;a<BLOCK_SIZE;a++){
+					printf("%c",pBuffer2[a]);
+				}
+				printf("\n");
+			}
 			cIndex++;
 		}
 	}
@@ -339,7 +351,6 @@ int main(int argc, char** argv)
 		TestCase4();
 		PrintInodeBytemap(); PrintBlockBytemap();
 		break;
-
 	default:
 		CloseFileSystem();
 		goto ERROR;

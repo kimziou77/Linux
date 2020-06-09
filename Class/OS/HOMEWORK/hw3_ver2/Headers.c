@@ -46,7 +46,7 @@ PathInfo PathFinder(const char *szFileName) {
 
     ptr = strtok(NULL, "/");
     if (ptr != NULL) { //폴더를 찾지 못했는데, 그 다음 token이 있었다면 Failed
-        printf("폴더를 찾지 못했는데, 다음 토큰이 있었음\n");
+        // printf("폴더를 찾지 못했는데, 다음 토큰이 있었음\n");
         pathInfo.pInodeNum = FAILED;
         return pathInfo;
     }
@@ -216,7 +216,7 @@ int UsingBlock(int bn){
 int FindDescriptorTable(){
     /*사용가능한 descriptorTable인덱스 반환*/
     for(int i=0; i<MAX_FD_ENTRY_MAX; i++){
-        if(pFileDesc[i].bUsed==TRUE){
+        if(pFileDesc[i].bUsed==FALSE){
             return i;
         }
     }
