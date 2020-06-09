@@ -1,3 +1,5 @@
+
+
 #include <sys/stat.h>
 #include <string.h>
 #include <assert.h>
@@ -5,11 +7,14 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <string.h>
-
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "disk.h"
 #include "fs.h"
+
+FileSysInfo* pFileSysInfo;
+
 #define MODE (0644)
 #define BLOCK_NUM (512)
 #define NONE (-15)
@@ -19,13 +24,17 @@ enum {FALSE=0, TRUE=1};
 enum {PARENT=0, CHILD};
 int WhereIsInodeBlock(int indoeno);
 int WhereIsInodeOrder(int indoeno);
-int WhereNewDirOrder(DirEntry * direntry,char * szDirName);
-int FindDirTable(DirEntry * direntry, char * targetName);
+int WhereNewDirOrder(int in,char * szDirName);
+int FindDirTable(int in, const char * targetName);
 int FindFileDescripterTable();
 int pathFinder(const char * szFileName);
 int pathFinder_n(const char * szFileName);
 int FindOffsetBlock(int legnth);
 char* NameFinder(const char * szFileName);
+void print_pSysInfo();
+void printDirEntry(DirEntry * direntry);
+void DirEntryInit(DirEntry * direntry);
+void BlockInit(char * pBuf);
 /*
 /static으로 숫자를 세어주고 num-of-dirent-per-block 보다 커지면.. 다시0으로
     //절대경로니까 항상 /로 시작 -> szName

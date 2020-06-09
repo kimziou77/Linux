@@ -91,7 +91,7 @@ int		GetFileStatus(const char* szPathName, FileStatus* pStatus);
 
 extern FileSysInfo* pFileSysInfo;
 
-void FileSysInit(void);	
+void FileSysInit(void);
 
 /*  File system internal functions */
 
