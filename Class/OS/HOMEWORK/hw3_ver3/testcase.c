@@ -7,10 +7,11 @@
 #include <assert.h>
 #include "disk.h"
 #include "fs.h"
-#include "Headers.h"
+
 
 #define FILENAME_MAX_LEN 100
 #define DIR_NUM_MAX      100
+
 
 void PrintInodeBytemap(void)
 {
@@ -46,18 +47,14 @@ void ListDirContents(const char* dirName)
 	Inode pInode;
 	
 	count = EnumerateDirStatus(dirName, pDirEntry, DIR_NUM_MAX);
-	// printf("count : %d \n",count);
+
 	printf("[%s]Sub-directory:\n", dirName);
-	
 	for (i = 0; i < count; i++)
 	{
 		memset(outputName, 0, FILENAME_MAX_LEN);
-		// printf("## : %d\n",pDirEntry[i].inodeNum);
 		GetInode(pDirEntry[i].inodeNum, &pInode);
-		// printDirEntry(pDirEntry[i].inodeNum);
-
 		if (pDirEntry[i].type == FILE_TYPE_FILE) {
-			printf("\t name: %s , inode no:%d, type:file, size:%d, blocks:%d\n", pDirEntry[i].name, pDirEntry[i].inodeNum, pInode.size, pInode.allocBlocks);
+			printf("\t name:%s, inode no:%d, type:file, size:%d, blocks:%d\n", pDirEntry[i].name, pDirEntry[i].inodeNum, pInode.size, pInode.allocBlocks);
 		}
 		else if (pDirEntry[i].type == FILE_TYPE_DIR)
 			printf("\t name:%s, inode no:%d, type:directory size:%d, blocks:%d\n", pDirEntry[i].name, pDirEntry[i].inodeNum,pInode.size, pInode.allocBlocks);
@@ -65,11 +62,9 @@ void ListDirContents(const char* dirName)
 		{
 			assert(0);
 		}
-
 		sprintf(outputName, "%s/%s", dirName, pDirEntry[i].name);
 		GetFileStatus(outputName, &status);
-
-		printf("\t\t name:%s, allocBlocks:%d, size:%d, dirBlockPtr:%d, %d, %d, %d, %d\n", pDirEntry[i].name, status.allocBlocks, status.size ,status.dirBlockPtr[0], status.dirBlockPtr[1], status.dirBlockPtr[2], status.dirBlockPtr[3], status.dirBlockPtr[4]);
+		printf("\t name:%s, allocBlocks:%d, size:%d, dirBlockPtr:%d, %d, %d, %d, %d\n", pDirEntry[i].name, status.allocBlocks, status.size ,status.dirBlockPtr[0], status.dirBlockPtr[1], status.dirBlockPtr[2], status.dirBlockPtr[3], status.dirBlockPtr[4]);
 	}
 }
 
@@ -79,6 +74,7 @@ void TestCase1(void)
 	char dirName[MAX_NAME_LEN];
 
 	printf(" ---- Test Case 1 ----\n");
+
 	MakeDir("/tmp");
 	MakeDir("/usr");
 	MakeDir("/etc");
@@ -97,8 +93,8 @@ void TestCase1(void)
 		sprintf(dirName, "/etc/dev%d", i);
 		MakeDir(dirName);
 	}
+
 	ListDirContents("/home");
-	// system("clear");
 	ListDirContents("/etc");
 
 	/* remove subdirectory of etc directory */
@@ -108,10 +104,6 @@ void TestCase1(void)
 		sprintf(dirName, "/etc/dev%d", i);
 		RemoveDir(dirName);
 	}
-	// char * pBuf = (char *)malloc(BLOCK_SIZE);
-	// DevReadBlock(10,pBuf);
-	// DirEntry * direntry = (DirEntry *)pBuf;
-	// printDirEntry(direntry[0].inodeNum);
 
 	ListDirContents("/etc");
 
@@ -119,13 +111,11 @@ void TestCase1(void)
 	RemoveDir("/etc");
 	RemoveDir("/usr");
 	RemoveDir("/tmp");
-	// print_pSysInfo();
 }
 
 
 void TestCase2(void)
 {
-	printf(" ---- Test Case 2 ----\n");
 	int i;
 	char fileName[FILENAME_MAX_LEN];
 	char tempName[FILENAME_MAX_LEN];
@@ -139,20 +129,12 @@ void TestCase2(void)
 	MakeDir(fileName);
 
 	ListDirContents("/dir");
-
-	// system("clear");
-
 	for (i = 0; i < 15; i++) {
 		sprintf(fileName, "%s/dir%d",fileName,i);
 		memset(paths[i], 0, FILENAME_MAX_LEN);
 		sprintf(paths[i], "%s", fileName);
 		MakeDir(fileName);
 	}
-	// char * pBuf = (char *)malloc(BLOCK_SIZE);
-	// DevReadBlock(23,pBuf);
-	// DirEntry * direntry = (DirEntry *)pBuf;
-	// printDirEntry(direntry[0].inodeNum);
-	// sleep(1000);
 
 	for (i = 0; i < 4; i++) {
 		sprintf(tempName, "%s", fileName);
@@ -161,6 +143,7 @@ void TestCase2(void)
 	}
 
 	ListDirContents(fileName);
+
 	for (i = 0; i < 4; i++) {
 		sprintf(tempName, "%s", fileName);
 		sprintf(tempName, "%s/%d.txt", tempName, i);
@@ -172,11 +155,9 @@ void TestCase2(void)
 		ListDirContents(paths[i]);
 		RemoveDir(paths[i]);
 	}
-	print_pSysInfo();
 }
 
 void TestCase3(void) {
-	printf(" ---- Test Case 3 ----\n");
 	int i, j, k;
 	char alphabet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$^&*()_";
 	char fileName[FILENAME_MAX_LEN];
@@ -184,6 +165,7 @@ void TestCase3(void) {
 	char* pBuffer2 = (char*)malloc(BLOCK_SIZE);
 	int cIndex = 0;
 	int fd[4] = { 0, };
+
 	MakeDir("/home/test");
 	for (i = 0; i < 4; i++)
 	{
@@ -200,7 +182,6 @@ void TestCase3(void) {
 			memset(str, 0, BLOCK_SIZE);
 			for (k = 0; k < BLOCK_SIZE; k++)
 				str[k] = alphabet[cIndex];
-			// printf("fd %d , %d번째 블럭\n",fd[j],i);
 			WriteFile(fd[j], str, BLOCK_SIZE);
 			cIndex++;
 			free(str);
@@ -209,6 +190,7 @@ void TestCase3(void) {
 
 	for (i = 0; i < 4; i++)
 		CloseFile(fd[i]);
+
 
 	for (i = 0; i < 4; i++)
 	{
@@ -228,17 +210,9 @@ void TestCase3(void) {
 				pBuffer1[k] = alphabet[cIndex];
 			memset(pBuffer2, 0, BLOCK_SIZE);
 			ReadFile(fd[j], pBuffer2, BLOCK_SIZE);
-			if(DEBUGGING){
-				for(int a=0;a<BLOCK_SIZE;a++){
-					printf("%c",pBuffer2[a]);
-				}
-				printf("\n");
-			}
 			cIndex++;
 		}
 	}
-	// ListDirContents("/home/user3");
-	print_pSysInfo();
 }
 
 void TestCase4(void)
@@ -250,10 +224,6 @@ void TestCase4(void)
 	char pBuffer1[BLOCK_SIZE];
 
 	printf(" ---- Test Case 4 ----\n");
-	// for(int i=0;i<40; i++){
-	// 	Test(i);
-	// }
-
 	for (i = 0; i < 5; i++)
 	{
 		for (j = 0; j < 5; j++)
@@ -313,23 +283,8 @@ void TestCase4(void)
 		}
 	}
 	printf(" ---- Test Case 4: files of even number re-created & written ----\n");
-	
+
 	ListDirContents("/home/user3");
-	// system("clear");
-	// // ListDirContents("/");
-	// ListDirContents("/dir");
-	// ListDirContents("/home");
-	// for (i = 0; i < 5; i++){
-	// 	memset(fileName, 0, FILENAME_MAX_LEN);
-	// 	sprintf(fileName, "/home/user%d", i);
-	// 	ListDirContents(fileName);
-	// }
-	
-	// for(int i=0;i<40; i++){
-	// 	Test(i);
-	// }
-	print_pSysInfo();
-	
 }
 int main(int argc, char** argv)
 {
@@ -368,6 +323,7 @@ int main(int argc, char** argv)
 		TestCase4();
 		PrintInodeBytemap(); PrintBlockBytemap();
 		break;
+
 	default:
 		CloseFileSystem();
 		goto ERROR;

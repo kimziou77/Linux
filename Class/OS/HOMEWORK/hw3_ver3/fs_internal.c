@@ -45,7 +45,7 @@ void FileSysInit(){
     fileSysInfo->blocks = 512;
     fileSysInfo->rootInodeNum = 0;
     fileSysInfo->diskCapacity = FS_DISK_CAPACITY;
-    fileSysInfo->numAllocBlocks = 0;
+    fileSysInfo->numAllocBlocks = 7;
     fileSysInfo->numFreeBlocks = 512 - 7;
     fileSysInfo->numAllocInodes = 0;
     fileSysInfo->inodeBytemapBlock = INODE_BYTEMAP_BLOCK_NUM;//1

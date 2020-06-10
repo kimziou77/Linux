@@ -10,4 +10,4 @@ f : test.c
 	gcc -o f test.c
 
 clean:
-	rm *.out *.o MY_DISK
+	rm *.out
