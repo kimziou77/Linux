@@ -60,65 +60,65 @@ int OpenFile(const char *szFileName) {
 }
 
 int WriteFile(int fileDesc, char *pBuffer, int length) {
-    if(DEBUGGING) printf("[+] WriteFile %d\n",fileDesc);
+    if (DEBUGGING) printf("[+] WriteFile %d\n", fileDesc);
     //  if(fileDesc<0) return FAILED;
     /*파일 불러오기*/
-    File * file = pFileDesc[fileDesc].pOpenFile;
-    Inode * pInode = (Inode *)malloc(sizeof(Inode));
-    char * pBuf = (char *)malloc(BLOCK_SIZE);
-    GetInode(file->inodeNum,pInode);
-    int rbPtr = file->fileOffset/BLOCK_SIZE;//해당하는 블록번째부터 읽는다
+    File* file = pFileDesc[fileDesc].pOpenFile;
+    Inode* pInode = (Inode*)malloc(sizeof(Inode));
+    char* pBuf = (char*)malloc(BLOCK_SIZE);
+    GetInode(file->inodeNum, pInode);
+    int rbPtr = file->fileOffset / BLOCK_SIZE;//해당하는 블록번째부터 읽는다
 
     // printf("desc : %d rbPtr : %d offset : %d \n",fileDesc, rbPtr,file->fileOffset);
-    int num=0;//읽은 개수
+    int num = 0;//읽은 개수
 
     //해당위치부터 할당된 블록까지
-    for(int i=rbPtr; i < NUM_OF_DIRECT_BLOCK_PTR; i++){//5개까지 할당 가능
-        if(num >= length) {//써야 할 개수가 되었다면 return;
-            if(pInode->dirBlockPtr[i]>7 && pInode->dirBlockPtr[i]<512)
-                DevWriteBlock(pInode->dirBlockPtr[i],pBuf);
-            DevWriteBlock(FILESYS_INFO_BLOCK,(char *)pFileSysInfo);
-            i=NUM_OF_DIRECT_BLOCK_PTR;
+    for (int i = rbPtr; i < NUM_OF_DIRECT_BLOCK_PTR; i++) {//5개까지 할당 가능
+        if (num >= length) {//써야 할 개수가 되었다면 return;
+            if (pInode->dirBlockPtr[i] > 7 && pInode->dirBlockPtr[i] < 512)
+                DevWriteBlock(pInode->dirBlockPtr[i], pBuf);
+            DevWriteBlock(FILESYS_INFO_BLOCK, (char*)pFileSysInfo);
+            i = NUM_OF_DIRECT_BLOCK_PTR;
             break;
-            if(DEBUGGING) printf("[-] @WriteFile\n\n");
+            if (DEBUGGING) printf("[-] @WriteFile\n\n");
         }
-        if(pInode->allocBlocks<NUM_OF_DIRECT_BLOCK_PTR && pInode->allocBlocks -1 < i){
+        if (pInode->allocBlocks < NUM_OF_DIRECT_BLOCK_PTR && pInode->allocBlocks - 1 < i) {
             int bn = GetFreeBlockNum();
             SetBlockBytemap(bn);
-            pInode->dirBlockPtr[pInode->allocBlocks]= bn;
+            pInode->dirBlockPtr[pInode->allocBlocks] = bn;
             pInode->allocBlocks++;
-            if(pInode->size < file->fileOffset)
+            if (pInode->size < file->fileOffset)
                 pInode->size = file->fileOffset;
             pFileSysInfo->numAllocBlocks++;
             pFileSysInfo->numFreeBlocks--;
-            PutInode(file->inodeNum,pInode);
-            DevWriteBlock(FILESYS_INFO_BLOCK,(char*)pFileSysInfo);
+            PutInode(file->inodeNum, pInode);
+            DevWriteBlock(FILESYS_INFO_BLOCK, (char*)pFileSysInfo);
         }
-        memset(pBuf,0,BLOCK_SIZE);
-        DevReadBlock(pInode->dirBlockPtr[i],pBuf);
+        memset(pBuf, 0, BLOCK_SIZE);
+        DevReadBlock(pInode->dirBlockPtr[i], pBuf);
 
-        for(int j=0; j<BLOCK_SIZE; j++){
-            if(num >= length){
-                i=NUM_OF_DIRECT_BLOCK_PTR;
-                if(pInode->dirBlockPtr[i]>7 && pInode->dirBlockPtr[i]<512)
-                    DevWriteBlock(pInode->dirBlockPtr[i],pBuf);
+        for (int j = 0; j < BLOCK_SIZE; j++) {
+            if (num >= length) {
+                i = NUM_OF_DIRECT_BLOCK_PTR;
+                if (pInode->dirBlockPtr[i] > 7 && pInode->dirBlockPtr[i] < 512)
+                    DevWriteBlock(pInode->dirBlockPtr[i], pBuf);
                 break;
             }
             pBuf[j] = pBuffer[j];
             num++;
             file->fileOffset++;
         }
-        if(pInode->dirBlockPtr[i]>7 && pInode->dirBlockPtr[i]<512)
-            DevWriteBlock(pInode->dirBlockPtr[i],pBuf);
+        if (pInode->dirBlockPtr[i] > 7 && pInode->dirBlockPtr[i] < 512)
+            DevWriteBlock(pInode->dirBlockPtr[i], pBuf);
     }
     // printf("%d fileoffset: %d\n",file->inodeNum,file->fileOffset);
-    if(pInode->size < file->fileOffset)
+    if (pInode->size < file->fileOffset)
         pInode->size = file->fileOffset;
-    
-    PutInode(file->inodeNum,pInode);
-    DevWriteBlock(FILESYS_INFO_BLOCK,(char*)pFileSysInfo);
+
+    PutInode(file->inodeNum, pInode);
+    DevWriteBlock(FILESYS_INFO_BLOCK, (char*)pFileSysInfo);
     // free(pInode);
-    if(DEBUGGING) printf("[-] WriteFile %d\n",fileDesc);
+    if (DEBUGGING) printf("[-] WriteFile %d\n", fileDesc);
     return num;
 }
 
@@ -157,10 +157,9 @@ int ReadFile(int fileDesc, char *pBuffer, int length) {
 int CloseFile(int fileDesc) {
     if(DEBUGGING) printf("[+] Close file\n");
     if(pFileDesc[fileDesc].bUsed==TRUE){
-        pFileDesc[fileDesc].pOpenFile->fileOffset=0;
-        pFileDesc[fileDesc].pOpenFile=NULL;
+        pFileDesc[fileDesc].pOpenFile->fileOffset = 0;
+        pFileDesc[fileDesc].pOpenFile = NULL;
         free(pFileDesc[fileDesc].pOpenFile);
-        
     }
     pFileDesc[fileDesc].bUsed=FALSE;
     if(DEBUGGING) printf("[-] Close file\n");
@@ -275,12 +274,18 @@ int RemoveDir(const char *szDirName) {
 
     //위에서 실패하지 않았다면 지울 수 있는 디렉토리이다.
     pInode->type=FILE_TYPE_DEV;
+    int pBnum =pInode->dirBlockPtr[0];
+    for(int i=0;i<pInode->allocBlocks; i++){
+        if(pInode->dirBlockPtr[i]>7 && pInode->dirBlockPtr[i]<512){
+            ResetBlockBytemap(pInode->dirBlockPtr[i]);//이제 사용 안하는 블럭이라고 표시해주기
+            pInode->dirBlockPtr[i]=0;
+        }
+    }
     PutInode(pi.pInodeNum,pInode);
-    ResetBlockBytemap(pInode->dirBlockPtr[0]);//이제 사용 안하는 블럭이라고 표시해주기
     ResetInodeBytemap(pi.pInodeNum);
 
     //부모 아이노드 겟
-    DevReadBlock(pInode->dirBlockPtr[0],pBuf);
+    DevReadBlock(pBnum,pBuf);
     DirEntry * direntry = (DirEntry *)pBuf;
     int pIn = direntry[1].inodeNum;//부모 Inode number
     TableIndex Ti = FindDirTable(pIn,pi.name);
@@ -310,6 +315,7 @@ int RemoveDir(const char *szDirName) {
         DevWriteBlock(FILESYS_INFO_BLOCK,(char *)pFileSysInfo);
     }
     DevWriteBlock(pInode->dirBlockPtr[Ti.pi],pBuf);
+    
     PutInode(pIn,pInode);
     /***********************************/
 

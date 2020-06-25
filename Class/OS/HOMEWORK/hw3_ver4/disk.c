@@ -32,7 +32,6 @@ void DevReadBlock(int blkno, char* pBuf)
 
 void DevWriteBlock(int blkno, char* pBuf)
 {
-
    __DevMoveBlock(blkno);
    write(fd, pBuf, BLOCK_SIZE);
 }

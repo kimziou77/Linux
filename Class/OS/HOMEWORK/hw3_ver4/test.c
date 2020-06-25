@@ -9,11 +9,11 @@ int main(void){
     // system("./main.out");
     
     system("./testcase.out format 1");
-    system("clear");
+    // system("clear");
     system("./testcase.out readwrite 2");
     // system("clear");
-    // system("./testcase.out readwrite 3");
+    system("./testcase.out readwrite 3");
     // system("clear");
-    // system("./testcase.out readwrite 4");
+    system("./testcase.out readwrite 4");
     return 0;
 }

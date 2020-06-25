@@ -135,6 +135,7 @@ void TestCase2(void)
 		sprintf(paths[i], "%s", fileName);
 		MakeDir(fileName);
 	}
+
 	for (i = 0; i < 4; i++) {
 		sprintf(tempName, "%s", fileName);
 		sprintf(tempName, "%s/%d.txt", tempName, i);
