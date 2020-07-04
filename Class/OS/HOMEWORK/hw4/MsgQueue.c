@@ -65,7 +65,7 @@ int pmq_send(pmqd_t mqd, char* msg_ptr, size_t msg_len, unsigned int msg_prio)
     /*메시지 초기화 */
     Message * message = malloc(sizeof(Message));
     strcpy(message->data,msg_ptr);//메시지 복사!!!!
-    if(DEBUGGING) printf("메시지 복사 완료\n");
+    if(DEBUGGING) printf("메시지 복사 완료 \n");
     message->size = msg_len;//메시지 길이
     message->priority = msg_prio;//메시지 우선순위
     
@@ -85,7 +85,6 @@ int pmq_send(pmqd_t mqd, char* msg_ptr, size_t msg_len, unsigned int msg_prio)
         Message * pPrev;
 
         for(Message *cursor = qcb->pMsgHead ; cursor!=NULL; ){
-                
             if(cursor->priority < msg_prio){//자신보다 낮은 우선순위라면 삽입한다.
                 
                 if(DEBUGGING) printf("자신(%d)보다 우선순위 낮은 친구(%d) 발견했음\n", msg_prio,cursor->priority);
@@ -107,18 +106,27 @@ int pmq_send(pmqd_t mqd, char* msg_ptr, size_t msg_len, unsigned int msg_prio)
                 break;
             }
             else{
-                if(DEBUGGING) printf("우선순위가 높지 않음?\n");
+                if(DEBUGGING) printf("우선순위가 높지 않음\n");
             }
+            if(DEBUGGING) printf("cursor : %s\n",cursor->data);
             pPrev = cursor;
             cursor = cursor->pNext;
-            
         }
         if(!flag){//NULL이 될 때 까지 자신보다 낮은 우선순위를 발견하지 못함.
-            if(DEBUGGING) printf("우선순위 젤 꼴지임\n");
+            if(DEBUGGING) printf("우선순위 젤 꼴지임%s\n",message->data);
+
+            if(qcb->pMsgTail!=NULL){
+                qcb->pMsgTail->pNext = message;
+                message->pPrev = qcb->pMsgTail;
+                
+            }
+            qcb->pMsgTail = message;
+            printf("head : %s tail : %s\n",qcb->pMsgHead->data,qcb->pMsgTail->data);
             pPrev->pNext = message;
             message->pPrev = pPrev;
             message->pNext = NULL;
         }
+
         qcb->msgCount++;
     }
     
@@ -179,11 +187,12 @@ ssize_t pmq_receive(pmqd_t mqd, char* msg_ptr, size_t msg_len, unsigned int* msg
     if(qcbTblEntry[mqd].bUsed==FALSE)
         return FAILED;
     Qcb* qcb = qcbTblEntry[mqd].pQcb;
+
     if(qcb!=NULL){
-        printf("nkkk");
+        if(DEBUGGING) printf("nkkk");
     }
     else{
-        printf("g0g0g0\n");
+        if(DEBUGGING) printf("g0g0g0\n");
     }
     
 
@@ -218,22 +227,19 @@ ssize_t pmq_receive(pmqd_t mqd, char* msg_ptr, size_t msg_len, unsigned int* msg
         // nThread->status = THREAD_STATUS_RUN;
         // __ContextSwitch(getpid(),nThread->pid);
         if(DEBUGGING) printf("리시브할 메시지가 있어서 레디큐에 왔다가 살아난 친구임니다 %d\n",getpid());
-        //컨텍스트 스위칭을 하고 나서 잠들어야 한다는데 ㅜ ㅜ
 
-        //qcb->pWaitQTail;
-        //suspend하는게 리시브에서 중요한 메커니즘 
-        //TODO: 스레드를 waiting queue !! Tail !!! 에 넣는다.
-        //ready queue에 있는 것을 실행한다.
     }
 
         /*Message가져오기*/
         Message * message;
+
         if(qcb->msgCount>0){
+
             message = qcb->pMsgHead; //헤드에서 메시지 가져오기
             qcb->msgCount--;
-
             qcb->pMsgHead = message->pNext; //다음 메시지를 헤드로 만들기
-            qcb->pMsgHead -> pPrev = NULL; //Head 삭제로 인한 prev NULL처리    
+
+            //qcb->pMsgHead -> pPrev = NULL; //Head 삭제로 인한 prev NULL처리    TODO: 고쳐도 되나?
             message->pNext= NULL; //받아온 메시지에 연결된 next 연결고리도 끊어준다.
         }
         

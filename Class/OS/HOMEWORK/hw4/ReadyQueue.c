@@ -53,7 +53,7 @@ Thread *GetThreadFromWaitingQueue(int pid){
 	
 	if(pWaitingQueueHead == pWaitingQueueTail){//하나만 있을때
 		if(DEBUGGING ) printf("저 혼자만 이써요 ㅜㅜ\n");
-		pWaitingQueueHead= pWaitingQueueTail =NULL;
+		pWaitingQueueHead= pWaitingQueueTail = NULL;
 	}
 	else if(target==pWaitingQueueHead){//target이 헤드일때
 		if(DEBUGGING ) printf("head입니다\n");

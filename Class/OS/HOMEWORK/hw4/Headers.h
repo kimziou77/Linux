@@ -12,7 +12,7 @@
 enum{FALSE = 0, TRUE = 1};
 enum{FAILED = -1, SUCCESS = 0};
 #define NON_EXIT -62
-#define DEBUGGING 1
+#define DEBUGGING 0
 #define NONE 0
 
 
