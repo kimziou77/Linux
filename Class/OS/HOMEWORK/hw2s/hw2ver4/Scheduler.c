@@ -11,11 +11,12 @@ void    __ContextSwitch(int curpid, int newpid){
     return;
 }
 void schedule(int signum){
+    if(pCurrentThread!=NULL)
+        printf("pCurrent %d\n",pCurrentThread->pid);
         
         Thread * nThread;
         //ReadyQueue is empty?
         if(!IsReadyQueueEmpty()){//No
-
             nThread = GetThreadFromReadyQueue();//get new thread
 
             if(pCurrentThread==NULL){
@@ -47,7 +48,6 @@ void schedule(int signum){
                     kill(pCurrentThread->pid,SIGCONT);
                 }
             }
-           
         }
         else{
             // printf("ReadyQueue empty\n");

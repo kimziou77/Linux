@@ -6,7 +6,7 @@ void* Tc1ThreadProc(void* param)
 	int count = 0;
 	int i;
 	int* retVal;
-
+	
 	tid = thread_self();
 
 	for(int i=0;i<5;i++){
@@ -43,4 +43,3 @@ void TestCase1(void)
 
 	return ;
 }
-

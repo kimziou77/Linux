@@ -51,7 +51,6 @@ int thread_suspend(thread_t tid){
     else if(pThread->status==THREAD_STATUS_WAIT){// WAIT
         // printf("suspend @@@ WAIT");
     }
-    
     return SUCCESS;
 }
 int thread_cancel(thread_t tid)//해당 스레드를 terminate 시키는 함수
@@ -82,7 +81,6 @@ int thread_cancel(thread_t tid)//해당 스레드를 terminate 시키는 함수
 
 int thread_resume(thread_t tid)
 {
-
     Thread* targetThread = pThreadTblEnt[tid].pThread;
 
      if(targetThread->priority < pCurrentThread->priority){//resume대상이 더 우선순위가 높으면
@@ -116,6 +114,7 @@ int thread_join(thread_t tid, void * * retval){
     thread_t pTid = thread_self();
     Thread * pThread = pThreadTblEnt[pTid].pThread;
     Thread * cThread = pThreadTblEnt[tid].pThread;
+
     if(cThread->status != THREAD_STATUS_ZOMBIE){
         pThread->status = THREAD_STATUS_WAIT;
         InsertThreadToWaitingQueue(pThread);
@@ -125,7 +124,7 @@ int thread_join(thread_t tid, void * * retval){
         if(nThread!=NULL){
             DeleteThreadFromReadyQueue(nThread);
             nThread->status = THREAD_STATUS_RUN;
-            pCurrentThread = nThread;//부모 -> new프로세스
+            //pCurrentThread = nThread;//부모 -> new프로세스
             kill(mainPid, SIGALRM);//부모한테 컨텍스트스위칭 요청
 
             while(cThread->status != THREAD_STATUS_ZOMBIE) pause();
