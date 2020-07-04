@@ -56,31 +56,31 @@ int pmq_close(pmqd_t mqd)
 int pmq_send(pmqd_t mqd, char* msg_ptr, size_t msg_len, unsigned int msg_prio)
 {
 
-    if(DEBUGGING) printf("[+] pmq_send\n");
+    if(DEBUGGING) printf("[+] pmq_send %s\n",qcbTblEntry[mqd].name);
     /*접근하고자 하는 우체통 qcb를 가져온다.*/
     
     if(qcbTblEntry[mqd].bUsed==FALSE) return FAILED;
     Qcb* qcb = qcbTblEntry[mqd].pQcb;
-    
+    if(DEBUGGING) printf("@ msg : %s name :  %s qcb message count : %d\n",msg_ptr, qcbTblEntry[mqd].name,qcb->msgCount);
     /*메시지 초기화 */
     Message * message = malloc(sizeof(Message));
     strcpy(message->data,msg_ptr);//메시지 복사!!!!
-    if(DEBUGGING) printf("메시지 복사 완료 \n");
+
     message->size = msg_len;//메시지 길이
     message->priority = msg_prio;//메시지 우선순위
     
     /*우선순위에 따라 Message 리스트에 넣는다.*/
     if(qcb->msgCount==0){//아무것도 없었다면 head == tail
-        if(DEBUGGING) printf("메시지가 현재 아무것도 없었음.\n");
-        if(DEBUGGING) printf("[=] head==tail %d\n",msg_prio);
+        if(DEBUGGING) printf("메시지가 현재 아무것도 없었음.%s\n",message->data);
+        if(DEBUGGING) printf("[=] head==tail\n");
         
         qcb->pMsgHead = message;
         qcb->pMsgTail = message;
         qcb->msgCount++;
     }
     else{//tail에 넣는다. 단, 우선순위 고려
-        if(DEBUGGING) printf("메시지가 존재해서 tail에 insert 한다 %d\n",qcb->msgCount);
-        if(DEBUGGING) printf("[=] tail insert%d\n",qcb->pMsgHead->priority);
+        if(DEBUGGING) printf("메시지가 존재해서 tail에 insert 한다 우선순위 : %d\n",msg_prio);
+        if(DEBUGGING) printf("[=] tail insert\n");
         BOOL flag = FALSE;
         Message * pPrev;
 
@@ -113,7 +113,7 @@ int pmq_send(pmqd_t mqd, char* msg_ptr, size_t msg_len, unsigned int msg_prio)
             cursor = cursor->pNext;
         }
         if(!flag){//NULL이 될 때 까지 자신보다 낮은 우선순위를 발견하지 못함.
-            if(DEBUGGING) printf("우선순위 젤 꼴지임%s\n",message->data);
+            if(DEBUGGING) printf("우선순위 젤 꼴지임%s && %s\n",message->data, msg_ptr);
 
             if(qcb->pMsgTail!=NULL){
                 qcb->pMsgTail->pNext = message;
@@ -121,7 +121,7 @@ int pmq_send(pmqd_t mqd, char* msg_ptr, size_t msg_len, unsigned int msg_prio)
                 
             }
             qcb->pMsgTail = message;
-            printf("head : %s tail : %s\n",qcb->pMsgHead->data,qcb->pMsgTail->data);
+            if(DEBUGGING) printf("[!] %s ) head : %s tail : %s count : %d \n",qcbTblEntry[mqd].name,qcb->pMsgHead->data,qcb->pMsgTail->data,qcb->msgCount+1);
             pPrev->pNext = message;
             message->pPrev = pPrev;
             message->pNext = NULL;
@@ -181,7 +181,7 @@ int pmq_send(pmqd_t mqd, char* msg_ptr, size_t msg_len, unsigned int msg_prio)
 ssize_t pmq_receive(pmqd_t mqd, char* msg_ptr, size_t msg_len, unsigned int* msg_prio)
 {
     //무조건 헤드에서 먼저 받는다.
-    if(DEBUGGING) printf("[+] pmq_recieve %d\n",mqd);
+    if(DEBUGGING) printf("[+] pmq_recieve %s\n",qcbTblEntry[mqd].name);
     if(DEBUGGING) print_all();
     /*접근하고자 하는 우체통 qcb를 가져온다.*/
     if(qcbTblEntry[mqd].bUsed==FALSE)
@@ -189,10 +189,10 @@ ssize_t pmq_receive(pmqd_t mqd, char* msg_ptr, size_t msg_len, unsigned int* msg
     Qcb* qcb = qcbTblEntry[mqd].pQcb;
 
     if(qcb!=NULL){
-        if(DEBUGGING) printf("nkkk");
+        if(DEBUGGING) printf("정상\n");
     }
     else{
-        if(DEBUGGING) printf("g0g0g0\n");
+        if(DEBUGGING) printf("qcb 오류\n");
     }
     
 
@@ -223,50 +223,37 @@ ssize_t pmq_receive(pmqd_t mqd, char* msg_ptr, size_t msg_len, unsigned int* msg
         if(DEBUGGING) printf("이제 이 스레드는 중단됩니다.\n");
         kill(mainPid,SIGALRM);
         kill(getpid(),SIGSTOP);
-        // Thread * nThread = GetThreadFromReadyQueue();
-        // nThread->status = THREAD_STATUS_RUN;
-        // __ContextSwitch(getpid(),nThread->pid);
         if(DEBUGGING) printf("리시브할 메시지가 있어서 레디큐에 왔다가 살아난 친구임니다 %d\n",getpid());
 
     }
 
         /*Message가져오기*/
         Message * message;
-
+        
         if(qcb->msgCount>0){
-
-            message = qcb->pMsgHead; //헤드에서 메시지 가져오기
+            message = qcb->pMsgHead; //헤드에서 메시지 가져오기            
             qcb->msgCount--;
             qcb->pMsgHead = message->pNext; //다음 메시지를 헤드로 만들기
-
             //qcb->pMsgHead -> pPrev = NULL; //Head 삭제로 인한 prev NULL처리    TODO: 고쳐도 되나?
             message->pNext= NULL; //받아온 메시지에 연결된 next 연결고리도 끊어준다.
+            
+        }
+        else{
+            if(DEBUGGING) printf("%s 에서 가져올 메시지가 없습니다\n",qcbTblEntry[mqd].name);
+            if(qcb->msgCount==0) return pmq_receive(mqd, msg_ptr, msg_len, msg_prio);
+            //가져올 메시지가 없다는 뜻인듯.
         }
         
-        
-        // if(message!=NULL){
-        //     if(DEBUGGING) printf("message는 널이 아닙니다\n");
+        if(message!=NULL){
+            int len = (message->size > msg_len) ? msg_len : message->size;
+            strncpy(msg_ptr,message->data, len);
+            *msg_prio = message->priority;//priority 
+            if(DEBUGGING) printf("[-] pmq_recieve\n");
+            return len;//짧은 것의 길이 (읽은 만큼 반환하기)
+        }
+        else{
             
-        //     if(DEBUGGING) printf("이제부터 next 가 head입니다\n");
-        //     if(qcb->pMsgHead !=NULL){
-        //         if(DEBUGGING) printf("메세지 헤드가 널이 아닙미다 \n");
-        //         qcb->pMsgHead -> pPrev = NULL; //Head 삭제로 인한 prev NULL처리    
-        //     }
-        //     else{
-        //         if(DEBUGGING) printf("메시지 헤드가 널입미다.\n");
-        //     }
-                
-        //     message->pNext= NULL; //받아온 메시지에 연결된 next 연결고리도 끊어준다.
-        // }
-        // else{
-        //     if(DEBUGGING) printf("message가 널입미다\n");
-        // }
-
-
-        int len = (message->size > msg_len) ? msg_len : message->size;
-        strncpy(msg_ptr,message->data, len);
-        *msg_prio = message->priority;//priority 
-        if(DEBUGGING) printf("[-] pmq_recieve\n");
-        return len;//짧은 것의 길이 (읽은 만큼 반환하기)
-    
+            if(DEBUGGING) printf("[-] pmq_recieve\n");
+            return PMQ_NANE_LEN_MAX;
+        }
 }

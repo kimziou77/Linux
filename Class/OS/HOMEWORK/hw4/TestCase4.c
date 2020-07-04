@@ -18,8 +18,10 @@ void* Tc4ThreadPing(void* param)
 		memset(msg,0,MAX_MSG_LEN);
 		sprintf(msg,"%d",*((int*)param));
 		pmq_send(mq1,msg,MAX_MSG_LEN,0);
+		// printf("[□] ping mq1 send 성공 %s pid(%d)\n",msg,getpid());
 		memset(msg,0,MAX_MSG_LEN);
 		pmq_receive(mq2,msg,MAX_MSG_LEN,&msg_prio);
+		// printf("[□] ping mq2 receive 성공 %s pid(%d)\n",msg,getpid());
 		flag[msg[0]-48]++;
 	}
 
@@ -51,10 +53,12 @@ void* Tc4ThreadPong(void* param)
 	for(i=1;i<=5;i++){
 		memset(msg,0,MAX_MSG_LEN);
 		pmq_receive(mq1,msg,MAX_MSG_LEN,&msg_prio);
+		// printf("[■] pong mq1 receive 성공 %s pid(%d) \n",msg,getpid());
 		flag[msg[0]-48]++;
 		memset(msg,0,MAX_MSG_LEN);
 		sprintf(msg,"%d",*((int*)param));
 		pmq_send(mq2,msg,MAX_MSG_LEN,0);
+		// printf("[■] pong mq2 send 성공 %s pid(%d)\n",msg,getpid());
 	}
 
 	memset(msg,0,MAX_MSG_LEN);
@@ -83,10 +87,11 @@ void TestCase4(void)
 	thread_create(&tid[0], NULL, 1, (void*)Tc4ThreadPong,(void*)&arr[0]);
 	thread_create(&tid[1], NULL, 1, (void*)Tc4ThreadPong,(void*)&arr[1]);
 	thread_create(&tid[2], NULL, 1, (void*)Tc4ThreadPong,(void*)&arr[2]);
+
 	thread_create(&tid[3], NULL, 1, (void*)Tc4ThreadPing,(void*)&arr[3]);
 	thread_create(&tid[4], NULL, 1, (void*)Tc4ThreadPing,(void*)&arr[4]);
 	thread_create(&tid[5], NULL, 1, (void*)Tc4ThreadPing,(void*)&arr[5]);
-
+	// print_all();
 
 	for(int j=0;j<6;j++){
 		memset(msg,0,MAX_MSG_LEN);
